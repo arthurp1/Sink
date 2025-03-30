@@ -55,3 +55,9 @@ Set the maximum query data volume for the Metric list.
 ## `NUXT_DISABLE_BOT_ACCESS_LOG`
 
 Access statistics do not count bot traffic.
+
+## `NUXT_PUBLIC_GOOGLE_TAG_MANAGER_ID`
+
+Set your Google Tag Manager (GTM) container ID to enable Google Analytics integration. This provides an alternative to Cloudflare Analytics Engine, which is only available with paid Cloudflare plans.
+
+For detailed setup instructions, see [Google Analytics Integration](./google-analytics.md).

@@ -32,6 +32,26 @@ useHead({
     },
   ],
 })
+
+// Track route changes for analytics
+const router = useRouter()
+router.afterEach((to) => {
+  // Only track in client-side
+  if (process.client) {
+    // Allow the page to finish rendering before sending the page view
+    nextTick(() => {
+      // Page view tracking is handled automatically by the GTM plugin,
+      // this is just an additional way to track specific data if needed
+      if (window.dataLayer) {
+        window.dataLayer.push({
+          event: 'nuxt-route-change',
+          page_path: to.fullPath,
+          page_title: document.title
+        })
+      }
+    })
+  }
+})
 </script>
 
 <template>

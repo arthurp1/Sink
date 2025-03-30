@@ -64,6 +64,7 @@ Site Token: SinkCool
 - **Framework**: [Nuxt](https://nuxt.com/)
 - **Database**: [Cloudflare Workers KV](https://developers.cloudflare.com/kv/)
 - **Analytics Engine**: [Cloudflare Workers Analytics Engine](https://developers.cloudflare.com/analytics/)
+- **Additional Analytics**: [Google Analytics](https://analytics.google.com/) (optional)
 - **UI Components**: [Shadcn-vue](https://www.shadcn-vue.com/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **Deployment**: [Cloudflare](https://www.cloudflare.com/)
@@ -95,6 +96,7 @@ We welcome your contributions and PRs.
    - `NUXT_SITE_TOKEN`: Must be longer than **8** characters. This token grants access to your dashboard.
    - `NUXT_CF_ACCOUNT_ID`: Locate your [account ID](https://developers.cloudflare.com/fundamentals/setup/find-account-and-zone-ids/).
    - `NUXT_CF_API_TOKEN`: Create a [Cloudflare API token](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) with at least `Account.Account Analytics` permissions. [See reference.](https://developers.cloudflare.com/analytics/analytics-engine/sql-api/#authentication)
+   - `NUXT_PUBLIC_GOOGLE_TAG_MANAGER_ID`: (Optional) Google Tag Manager ID (e.g., GTM-XXXXXX) for Google Analytics integration.
 
 5. Save and deploy the project.
 6. Cancel the deployment, then navigate to **Settings** -> **Bindings** -> **Add**:

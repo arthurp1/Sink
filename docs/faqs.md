@@ -15,7 +15,7 @@ Please check if `NUXT_SITE_TOKEN` is set to pure numbers, Sink does not support 
 
 ## 3. Why can't I see the analytics data?
 
-Analytics data requires access to Cloudflare’s settings:
+Analytics data requires access to Cloudflare's settings:
 
 1. Verify `NUXT_CF_ACCOUNT_ID` and `NUXT_CF_API_TOKEN` are configured correctly (ensure the Account ID matches the deployment zone ID).
 2. Check that the Worker analytics engine is enabled.
@@ -35,7 +35,7 @@ NuxtHub's ANALYTICS points to its dataset, you need to set the `NUXT_DATASET` en
 
 ## 6. Why are links always case-insensitive?
 
-This is a feature of Sink. By default, we automatically convert all links to lowercase to avoid case-sensitive issues and improve usability. This ensures users don’t encounter errors due to accidental capitalization differences.
+This is a feature of Sink. By default, we automatically convert all links to lowercase to avoid case-sensitive issues and improve usability. This ensures users don't encounter errors due to accidental capitalization differences.
 
 However, you can disable this feature by setting the `NUXT_CASE_SENSITIVE` environment variable to `true`.
 
@@ -50,3 +50,16 @@ To improve query performance, we have limited the amount of data. If you need to
 ## 8. I don't want to count bot or crawler traffic
 
 Set `NUXT_DISABLE_BOT_ACCESS_LOG` to `true`.
+
+## 9. Is there an alternative to Cloudflare Analytics Engine for free plans?
+
+Yes. If you're using Cloudflare's free plan which doesn't include Analytics Engine, you can use Google Analytics as an alternative. 
+
+Sink includes built-in Google Analytics integration through Google Tag Manager. To enable this:
+
+1. Set up a Google Analytics 4 property and Google Tag Manager container
+2. Add your GTM Container ID to the environment variable: `NUXT_PUBLIC_GOOGLE_TAG_MANAGER_ID`
+
+For detailed setup instructions, see [Google Analytics Integration](./google-analytics.md).
+
+Note that while the built-in Cloudflare Analytics provides purpose-built metrics for link analytics, Google Analytics offers a comprehensive solution for tracking user behavior, page views, and custom events.

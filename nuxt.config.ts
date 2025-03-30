@@ -34,6 +34,7 @@ export default defineNuxtConfig({
     public: {
       previewMode: '',
       slugDefaultLength: '6',
+      googleTagManagerId: process.env.GOOGLE_TAG_MANAGER_ID || '',
     },
   },
 
