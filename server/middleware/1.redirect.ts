@@ -60,13 +60,26 @@ export default eventHandler(async (event) => {
               gtag('js', new Date());
               gtag('config', '${gaMeasurementId}');
 
-              // Track the redirect event
-              gtag('event', 'page_view', {
+              // Track the page view event - this is a GA4 best practice for proper page view tracking
+              gtag('config', '${gaMeasurementId}', {
                 page_title: 'Redirect: ${slug}',
-                page_path: '/${slug}'
+                page_path: '/${slug}',
+                page_location: window.location.href
               });
 
+              // Track the custom redirect event
               gtag('event', 'redirect', {
+                slug: '${slug}',
+                destination: '${target}',
+                domain: window.location.hostname,
+                referrer: document.referrer || '',
+                timestamp: new Date().toISOString(),
+                event_category: 'Slug',
+                event_label: '${slug}'
+              });
+
+              // Also track a custom event specifically for redirects
+              gtag('event', 'custom_redirect', {
                 slug: '${slug}',
                 destination: '${target}',
                 domain: window.location.hostname,
@@ -77,7 +90,7 @@ export default eventHandler(async (event) => {
               // Redirect after a tiny delay to ensure tracking is sent
               setTimeout(function() {
                 window.location.href = "${target}";
-              }, 50);
+              }, 100); // Slightly longer delay to ensure all tracking events are sent
             </script>
           </head>
           <body>

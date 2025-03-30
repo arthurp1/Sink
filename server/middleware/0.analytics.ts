@@ -67,6 +67,19 @@ export default eventHandler(async (event) => {
             referrer: getHeader(event, 'referer') || '',
             user_agent: userAgent,
             timestamp: new Date().toISOString(),
+            event_category: 'Slug',
+            event_label: slug,
+          },
+        }, {
+          // Add another custom event specifically for redirects to ensure consistent tracking
+          name: 'custom_redirect',
+          params: {
+            slug,
+            destination: targetUrl,
+            domain: host,
+            referrer: getHeader(event, 'referer') || '',
+            user_agent: userAgent,
+            timestamp: new Date().toISOString(),
           },
         }],
       }

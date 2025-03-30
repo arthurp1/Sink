@@ -1,5 +1,5 @@
 import { defineNuxtPlugin } from '#app'
-import { trackRedirect } from '~/utils/analytics'
+import { trackPageView, trackRedirect } from '~/utils/analytics'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig()
@@ -30,8 +30,14 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
   })
 
+  // Track all page views, including non-slug pages
   nuxtApp.hook('page:finish', () => {
-    // Check if this is a slug path (not starting with /dashboard, etc.)
+    // First track a general page view for all pages
+    const currentPath = window.location.pathname
+    const pageTitle = document.title || 'Unknown Page'
+    trackPageView(currentPath, pageTitle)
+
+    // Then check if this is a slug path for additional tracking
     const path = window.location.pathname
     const { slugRegex, reserveSlug } = useAppConfig()
     const slug = path.replace(/^\/|\/$/g, '') // Remove leading/trailing slashes

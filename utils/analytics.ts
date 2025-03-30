@@ -199,14 +199,29 @@ export function trackRedirect(slug: string) {
  * @param slug The slug that was accessed
  */
 function sendRedirectEvents(slug: string) {
-  // Track the standard page_view event for backward compatibility
+  // First, explicitly track a page view event
+  trackPageView(`/${slug}`, `Redirect: ${slug}`)
+
+  // Track the standard page_view event for backward compatibility (direct gtag call)
   trackEvent('page_view', {
     page_title: `Redirect: ${slug}`,
     page_path: `/${slug}`,
+    page_location: typeof window !== 'undefined' ? window.location.href : '',
   })
 
   // Track the custom 'redirect' event with additional info
   trackEvent('redirect', {
+    slug,
+    destination: typeof window !== 'undefined' ? window.location.href : '',
+    domain: typeof window !== 'undefined' ? window.location.hostname : '',
+    referrer: typeof document !== 'undefined' ? document.referrer || '' : '',
+    timestamp: new Date().toISOString(),
+    event_category: 'Slug',
+    event_label: slug,
+  })
+
+  // Also track a custom event specifically for redirects
+  trackEvent('custom_redirect', {
     slug,
     destination: typeof window !== 'undefined' ? window.location.href : '',
     domain: typeof window !== 'undefined' ? window.location.hostname : '',
