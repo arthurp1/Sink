@@ -20,32 +20,54 @@ export function trackEvent(eventName: string, params: AnalyticsEventParams = {})
   if (typeof window === 'undefined')
     return
 
-  // Get the Google Analytics object
-  const gtag = (window as any).gtag
+  const isDevMode = process.env.NODE_ENV !== 'production'
 
-  // Also support dataLayer for legacy GTM implementation
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      event: eventName,
-      ...params,
-    })
-  }
-
-  if (!gtag) {
-    console.warn('Google Analytics not initialized')
-    return
-  }
-
+  // Push to dataLayer first (for GTM)
   try {
-    gtag('event', eventName, params)
+    if (typeof window.dataLayer !== 'undefined') {
+      window.dataLayer.push({
+        event: eventName,
+        ...params,
+      })
 
-    // Log in development mode
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`Analytics event sent: ${eventName}`, params)
+      if (isDevMode) {
+        console.log(`Analytics event sent to dataLayer: ${eventName}`, params)
+      }
+
+      // If we have dataLayer, that's sufficient for tracking
+      return
+    }
+    else if (isDevMode) {
+      console.warn('dataLayer not initialized')
     }
   }
-  catch (error) {
-    console.error('Failed to track event:', error)
+  catch (dataLayerError) {
+    console.error('Failed to push to dataLayer:', dataLayerError)
+  }
+
+  // Fallback to direct gtag if available
+  try {
+    const gtag = (window as any).gtag
+
+    if (typeof gtag === 'function') {
+      gtag('event', eventName, params)
+
+      if (isDevMode) {
+        console.log(`Analytics event sent via gtag: ${eventName}`, params)
+      }
+      return
+    }
+    else if (isDevMode) {
+      console.warn('Google Analytics (gtag) not initialized')
+    }
+  }
+  catch (gtagError) {
+    console.error('Failed to send event via gtag:', gtagError)
+  }
+
+  // Final fallback - log that tracking failed
+  if (isDevMode) {
+    console.warn(`Unable to track event: ${eventName} - No analytics handlers available`)
   }
 }
 
@@ -56,14 +78,27 @@ export function trackEvent(eventName: string, params: AnalyticsEventParams = {})
 export function getAnalyticsConfig() {
   // For client-side use to get public runtime config
   if (typeof window !== 'undefined') {
-    const config = useRuntimeConfig()
-    return {
-      measurementId: config.public.gaMeasurementId,
-      isDomainConfigured: !!config.public.domainName && config.public.domainName !== 'localhost:3000',
+    try {
+      const config = useRuntimeConfig()
+      // Make sure config and config.public exist before accessing properties
+      if (config && config.public) {
+        return {
+          measurementId: config.public.gaMeasurementId || '',
+          googleTagManagerId: config.public.googleTagManagerId || '',
+          isDomainConfigured: !!config.public.domainName && config.public.domainName !== 'localhost:3000',
+        }
+      }
+    }
+    catch (error) {
+      console.error('Failed to get analytics config:', error)
     }
   }
-  // Server-side will get full config with API secret
-  return {}
+  // Return empty config if unable to access runtime config
+  return {
+    measurementId: '',
+    googleTagManagerId: '',
+    isDomainConfigured: false,
+  }
 }
 
 /**
@@ -73,8 +108,8 @@ export function getAnalyticsConfig() {
  */
 export function trackPageView(path?: string, title?: string) {
   trackEvent('page_view', {
-    page_path: path || window.location.pathname,
-    page_title: title || document.title,
+    page_path: path || (typeof window !== 'undefined' ? window.location.pathname : ''),
+    page_title: title || (typeof document !== 'undefined' ? document.title : ''),
   })
 }
 
@@ -98,7 +133,7 @@ export function trackLinkClick(url: string, text: string, isExternal: boolean = 
  */
 export function isAnalyticsConfigured(): boolean {
   const config = getAnalyticsConfig()
-  return !!config.measurementId
+  return !!(config.measurementId || config.googleTagManagerId)
 }
 
 /**
@@ -116,9 +151,10 @@ export function trackRedirect(slug: string) {
   // Track the custom 'redirect' event with additional info
   trackEvent('redirect', {
     slug,
-    destination: window.location.href,
-    domain: window.location.hostname,
-    referrer: document.referrer || '',
+    destination: typeof window !== 'undefined' ? window.location.href : '',
+    domain: typeof window !== 'undefined' ? window.location.hostname : '',
+    referrer: typeof document !== 'undefined' ? document.referrer || '' : '',
+    timestamp: new Date().toISOString(),
   })
 }
 
