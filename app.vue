@@ -83,8 +83,32 @@ router.afterEach((to) => {
 
 <template>
   <NuxtLayout>
-    <NuxtLoadingIndicator color="#000" />
-    <NuxtPage />
+    <!-- Loading indicator with improved visibility and background -->
+    <NuxtLoadingIndicator color="#000" height="4px" />
+
+    <Suspense>
+      <template #default>
+        <NuxtPage />
+      </template>
+      <template #fallback>
+        <div class="fixed inset-0 flex items-center justify-center bg-white" style="background-color: white; z-index: 9999;">
+          <div class="text-center">
+            <h1 class="text-2xl font-bold mb-2">
+              Loading...
+            </h1>
+          </div>
+        </div>
+      </template>
+    </Suspense>
+
     <Toaster />
   </NuxtLayout>
 </template>
+
+<style>
+/* Add global style to ensure white background during page transitions */
+.page-enter-active,
+.page-leave-active {
+  background-color: white !important;
+}
+</style>

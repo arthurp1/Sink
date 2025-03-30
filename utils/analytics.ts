@@ -154,26 +154,65 @@ export function trackRedirect(slug: string) {
   // Don't block execution with analytics - ensure redirect continues
   setTimeout(() => {
     try {
-      // Track the standard page_view event for backward compatibility
-      trackEvent('page_view', {
-        page_title: `Redirect: ${slug}`,
-        page_path: `/${slug}`,
-      })
+      // Ensure Google Analytics is loaded if it wasn't already
+      const config = getAnalyticsConfig()
+      const measurementId = config.measurementId
 
-      // Track the custom 'redirect' event with additional info
-      trackEvent('redirect', {
-        slug,
-        destination: typeof window !== 'undefined' ? window.location.href : '',
-        domain: typeof window !== 'undefined' ? window.location.hostname : '',
-        referrer: typeof document !== 'undefined' ? document.referrer || '' : '',
-        timestamp: new Date().toISOString(),
-      })
+      // Dynamically add Google Analytics if not present
+      if (typeof window !== 'undefined' && measurementId
+        && !document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${measurementId}"]`)) {
+        // Add the gtag.js script
+        const gtagScript = document.createElement('script')
+        gtagScript.async = true
+        gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
+        document.head.appendChild(gtagScript)
+
+        // Add the inline configuration script
+        const configScript = document.createElement('script')
+        configScript.innerHTML = `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${measurementId}');
+        `
+        document.head.appendChild(configScript)
+
+        // Give a small delay to allow the scripts to load
+        setTimeout(() => {
+          sendRedirectEvents(slug)
+        }, 50)
+      }
+      else {
+        // Analytics already loaded, send events immediately
+        sendRedirectEvents(slug)
+      }
     }
     catch (error) {
       // Silently handle errors to ensure redirect isn't affected
       console.error('Analytics error during redirect:', error)
     }
   }, 0)
+}
+
+/**
+ * Helper function to send the actual redirect events to GA
+ * @param slug The slug that was accessed
+ */
+function sendRedirectEvents(slug: string) {
+  // Track the standard page_view event for backward compatibility
+  trackEvent('page_view', {
+    page_title: `Redirect: ${slug}`,
+    page_path: `/${slug}`,
+  })
+
+  // Track the custom 'redirect' event with additional info
+  trackEvent('redirect', {
+    slug,
+    destination: typeof window !== 'undefined' ? window.location.href : '',
+    domain: typeof window !== 'undefined' ? window.location.hostname : '',
+    referrer: typeof document !== 'undefined' ? document.referrer || '' : '',
+    timestamp: new Date().toISOString(),
+  })
 }
 
 // Add TypeScript support for the dataLayer
