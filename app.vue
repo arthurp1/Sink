@@ -43,7 +43,18 @@ useHead({
         j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
         })(window,document,'script','dataLayer','${config.public.googleTagManagerId || 'GTM-XXXXXXX'}');
+
+        // Direct Google Analytics 4 implementation
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${config.public.gaMeasurementId || 'G-YTWJTM33GX'}');
       `,
+      tagPosition: 'head',
+    },
+    {
+      src: `https://www.googletagmanager.com/gtag/js?id=${config.public.gaMeasurementId || 'G-YTWJTM33GX'}`,
+      async: true,
       tagPosition: 'head',
     },
   ],

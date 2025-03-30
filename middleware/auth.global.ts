@@ -1,4 +1,4 @@
-import { hasSiteToken, getSiteToken } from '~/utils/auth'
+import { getSiteToken, hasSiteToken } from '~/utils/auth'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server)
@@ -28,6 +28,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
   }
 
+  // Skip root route handling since we're handling it directly in the page component
+  // to avoid runtimeConfig errors and ensure direct redirection to aibuilders.club
+  /*
   if (to.path === '/') {
     try {
       const token = getSiteToken() || window.localStorage.getItem('SinkSiteToken')
@@ -43,4 +46,5 @@ export default defineNuxtRouteMiddleware(async (to) => {
       return navigateTo('/dashboard/login')
     }
   }
+  */
 })

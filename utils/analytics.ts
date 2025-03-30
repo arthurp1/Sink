@@ -33,9 +33,6 @@ export function trackEvent(eventName: string, params: AnalyticsEventParams = {})
       if (isDevMode) {
         console.log(`Analytics event sent to dataLayer: ${eventName}`, params)
       }
-
-      // If we have dataLayer, that's sufficient for tracking
-      return
     }
     else if (isDevMode) {
       console.warn('dataLayer not initialized')
@@ -45,12 +42,24 @@ export function trackEvent(eventName: string, params: AnalyticsEventParams = {})
     console.error('Failed to push to dataLayer:', dataLayerError)
   }
 
-  // Fallback to direct gtag if available
+  // Use gtag directly if available
   try {
+    // Access gtag function (either window.gtag or the function we defined in app.vue)
     const gtag = (window as any).gtag
 
     if (typeof gtag === 'function') {
-      gtag('event', eventName, params)
+      // For page_view events, use config command which is better for GA4
+      if (eventName === 'page_view') {
+        gtag('config', process.env.GA_MEASUREMENT_ID || 'G-YTWJTM33GX', {
+          page_path: params.page_path,
+          page_title: params.page_title,
+          send_page_view: true,
+        })
+      }
+      else {
+        // For all other events, use event command
+        gtag('event', eventName, params)
+      }
 
       if (isDevMode) {
         console.log(`Analytics event sent via gtag: ${eventName}`, params)
@@ -83,7 +92,7 @@ export function getAnalyticsConfig() {
       // Make sure config and config.public exist before accessing properties
       if (config && config.public) {
         return {
-          measurementId: config.public.gaMeasurementId || '',
+          measurementId: config.public.gaMeasurementId || 'G-YTWJTM33GX',
           googleTagManagerId: config.public.googleTagManagerId || '',
           isDomainConfigured: !!config.public.domainName && config.public.domainName !== 'localhost:3000',
         }
@@ -93,9 +102,9 @@ export function getAnalyticsConfig() {
       console.error('Failed to get analytics config:', error)
     }
   }
-  // Return empty config if unable to access runtime config
+  // Return default config if unable to access runtime config
   return {
-    measurementId: '',
+    measurementId: 'G-YTWJTM33GX',
     googleTagManagerId: '',
     isDomainConfigured: false,
   }
@@ -142,20 +151,29 @@ export function isAnalyticsConfigured(): boolean {
  * @param slug The slug that was accessed
  */
 export function trackRedirect(slug: string) {
-  // Track the standard page_view event for backward compatibility
-  trackEvent('page_view', {
-    page_title: `Redirect: ${slug}`,
-    page_path: `/${slug}`,
-  })
+  // Don't block execution with analytics - ensure redirect continues
+  setTimeout(() => {
+    try {
+      // Track the standard page_view event for backward compatibility
+      trackEvent('page_view', {
+        page_title: `Redirect: ${slug}`,
+        page_path: `/${slug}`,
+      })
 
-  // Track the custom 'redirect' event with additional info
-  trackEvent('redirect', {
-    slug,
-    destination: typeof window !== 'undefined' ? window.location.href : '',
-    domain: typeof window !== 'undefined' ? window.location.hostname : '',
-    referrer: typeof document !== 'undefined' ? document.referrer || '' : '',
-    timestamp: new Date().toISOString(),
-  })
+      // Track the custom 'redirect' event with additional info
+      trackEvent('redirect', {
+        slug,
+        destination: typeof window !== 'undefined' ? window.location.href : '',
+        domain: typeof window !== 'undefined' ? window.location.hostname : '',
+        referrer: typeof document !== 'undefined' ? document.referrer || '' : '',
+        timestamp: new Date().toISOString(),
+      })
+    }
+    catch (error) {
+      // Silently handle errors to ensure redirect isn't affected
+      console.error('Analytics error during redirect:', error)
+    }
+  }, 0)
 }
 
 // Add TypeScript support for the dataLayer

@@ -42,16 +42,9 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': {
-      redirect: {
-        to: (req) => {
-          // Only redirect the root path from aib.club to aibuilders.club
-          if (req.headers.host === 'aib.club') {
-            return 'https://aibuilders.club'
-          }
-          // Default behavior for other cases
-          return '/dashboard/links'
-        },
-      },
+      // Simplified root route handling
+      // The actual redirect happens in the page component
+      ssr: false,
     },
     '/dashboard/**': {
       ssr: false,
