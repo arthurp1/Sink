@@ -37,17 +37,27 @@ export default eventHandler(async (event) => {
           params: {
             page_title: `Redirect: ${slug}`,
             page_location: `https://${domain}/${slug}`, // Use configured domain
-            page_path: `/${slug}`
-          }
+            page_path: `/${slug}`,
+          },
         }, {
           // Add a custom event for link clicks with more detailed parameters
           name: 'link_click',
           params: {
-            slug: slug,
+            slug,
             destination: targetUrl,
-            referrer: getHeader(event, 'referer') || ''
-          }
-        }]
+            referrer: getHeader(event, 'referer') || '',
+          },
+        }, {
+          // Add the custom 'redirect' event as requested
+          name: 'redirect',
+          params: {
+            slug,
+            destination: targetUrl,
+            domain: getHeader(event, 'host') || domain,
+            referrer: getHeader(event, 'referer') || '',
+            user_agent: userAgent,
+          },
+        }],
       }
 
       // For debugging, log the payload in development
@@ -61,24 +71,28 @@ export default eventHandler(async (event) => {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(response => {
+          'Content-Type': 'application/json',
+        },
+      }).then((response) => {
         if (!response.ok) {
           console.error('Analytics error:', response.status, response.statusText)
-        } else if (process.env.NODE_ENV !== 'production') {
+        }
+        else if (process.env.NODE_ENV !== 'production') {
           console.log('Analytics event sent successfully!')
         }
-      }).catch(error => {
+      }).catch((error) => {
         console.error('Failed to send analytics event:', error)
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Analytics error:', error)
     }
-  } else if (process.env.NODE_ENV !== 'production' && !gaMeasurementId) {
+  }
+  else if (process.env.NODE_ENV !== 'production' && !gaMeasurementId) {
     // In development, log a message if analytics isn't configured
     console.warn('Google Analytics not configured: Missing GA_MEASUREMENT_ID environment variable')
-  } else if (process.env.NODE_ENV !== 'production' && !apiSecret) {
+  }
+  else if (process.env.NODE_ENV !== 'production' && !apiSecret) {
     // In development, log a message if analytics isn't configured
     console.warn('Google Analytics not configured: Missing GA_API_SECRET environment variable')
   }
