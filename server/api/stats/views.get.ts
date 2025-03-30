@@ -1,29 +1,74 @@
 import type { H3Event } from 'h3'
-import { QuerySchema } from '@/schemas/query'
 import { z } from 'zod'
 
-const { select } = SqlBricks
+// Base schema for query validation
+const QuerySchema = z.object({
+  startAt: z.string().or(z.number()).optional(),
+  endAt: z.string().or(z.number()).optional(),
+  limit: z.number().default(100),
+});
 
-const unitMap: { [x: string]: string } = {
-  hour: '%Y-%m-%d %H',
-  day: '%Y-%m-%d',
-}
-
+// Schema specific to views endpoint
 const ViewsQuerySchema = QuerySchema.extend({
   unit: z.string(),
   clientTimezone: z.string().default('Etc/UTC'),
-})
+});
 
-function query2sql(query: z.infer<typeof ViewsQuerySchema>, event: H3Event): string {
-  const filter = query2filter(query)
-  const { dataset } = useRuntimeConfig(event)
-  const sql = select(`formatDateTime(timestamp, '${unitMap[query.unit]}', '${query.clientTimezone}') as time, SUM(_sample_interval) as visits, COUNT(DISTINCT ${logsMap.ip}) as visitors`).from(dataset).where(filter).groupBy('time').orderBy('time')
-  appendTimeFilter(sql, query)
-  return sql.toString()
+// Mock data for view statistics
+function generateMockViewData(query: z.infer<typeof ViewsQuerySchema>): any[] {
+  const { unit } = query;
+  const results = [];
+  const now = new Date();
+
+  // Generate data for the last 7 days or 24 hours depending on the unit
+  const dataPoints = unit === 'hour' ? 24 : 7;
+
+  for (let i = 0; i < dataPoints; i++) {
+    const date = new Date(now);
+    if (unit === 'hour') {
+      date.setHours(date.getHours() - (dataPoints - i - 1));
+      results.push({
+        time: `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}`,
+        visits: Math.floor(Math.random() * 50) + 10,
+        visitors: Math.floor(Math.random() * 30) + 5
+      });
+    } else {
+      date.setDate(date.getDate() - (dataPoints - i - 1));
+      results.push({
+        time: `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`,
+        visits: Math.floor(Math.random() * 200) + 50,
+        visitors: Math.floor(Math.random() * 100) + 20
+      });
+    }
+  }
+
+  return results;
 }
 
-export default eventHandler(async (event) => {
-  const query = await getValidatedQuery(event, ViewsQuerySchema.parse)
-  const sql = query2sql(query, event)
-  return useWAE(event, sql)
+export default defineEventHandler(async (event) => {
+  // Ensure the request is authenticated
+  const token = getHeader(event, 'Authorization')?.replace('Bearer ', '')
+  const config = useRuntimeConfig(event)
+
+  if (!token || token !== config.siteToken) {
+    throw createError({
+      statusCode: 403,
+      message: 'Unauthorized access to statistics',
+    })
+  }
+
+  try {
+    // Parse and validate the query parameters
+    const query = getQuery(event);
+    const validated = ViewsQuerySchema.parse(query);
+
+    // Generate and return mock data
+    return generateMockViewData(validated);
+  } catch (error) {
+    console.error('Error in views endpoint:', error);
+    throw createError({
+      statusCode: 400,
+      message: 'Invalid query parameters',
+    });
+  }
 })

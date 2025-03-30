@@ -1,19 +1,46 @@
 import type { H3Event } from 'h3'
-import { QuerySchema } from '@/schemas/query'
+import { z } from 'zod'
 
-const { select } = SqlBricks
+// Base schema for query validation
+const QuerySchema = z.object({
+  startAt: z.string().or(z.number()).optional(),
+  endAt: z.string().or(z.number()).optional(),
+  limit: z.number().default(100),
+});
 
-function query2sql(query: Query, event: H3Event): string {
-  const filter = query2filter(query)
-  const { dataset } = useRuntimeConfig(event)
-  // visitors did not consider sampling
-  const sql = select(`SUM(_sample_interval) as visits, COUNT(DISTINCT ${logsMap.ip}) as visitors, COUNT(DISTINCT ${logsMap.referer}) as referers`).from(dataset).where(filter)
-  appendTimeFilter(sql, query)
-  return sql.toString()
+// Generate mock counter data
+function generateMockCounterData(): any {
+  return {
+    visits: Math.floor(Math.random() * 1000) + 500,
+    visitors: Math.floor(Math.random() * 500) + 250,
+    referers: Math.floor(Math.random() * 100) + 30,
+  };
 }
 
-export default eventHandler(async (event) => {
-  const query = await getValidatedQuery(event, QuerySchema.parse)
-  const sql = query2sql(query, event)
-  return useWAE(event, sql)
+export default defineEventHandler(async (event) => {
+  // Ensure the request is authenticated
+  const token = getHeader(event, 'Authorization')?.replace('Bearer ', '')
+  const config = useRuntimeConfig(event)
+
+  if (!token || token !== config.siteToken) {
+    throw createError({
+      statusCode: 403,
+      message: 'Unauthorized access to statistics',
+    })
+  }
+
+  try {
+    // Parse and validate the query parameters
+    const query = getQuery(event);
+    const validated = QuerySchema.parse(query);
+
+    // Generate and return mock data
+    return generateMockCounterData();
+  } catch (error) {
+    console.error('Error in counters endpoint:', error);
+    throw createError({
+      statusCode: 400,
+      message: 'Invalid query parameters',
+    });
+  }
 })
