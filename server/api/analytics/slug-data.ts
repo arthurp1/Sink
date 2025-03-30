@@ -1,4 +1,3 @@
-import { getServerSession } from '#auth'
 import { useRuntimeConfig } from '#imports'
 
 /**
@@ -11,9 +10,12 @@ import { useRuntimeConfig } from '#imports'
  * - Caching for frequent requests
  */
 export default defineEventHandler(async (event) => {
-  // Ensure the user is authenticated
-  const session = await getServerSession(event)
-  if (!session) {
+  // Ensure the request is authenticated using token-based auth
+  // This replaces the getServerSession check
+  const token = getHeader(event, 'Authorization')?.replace('Bearer ', '')
+  const config = useRuntimeConfig()
+
+  if (!token || token !== config.siteToken) {
     throw createError({
       statusCode: 401,
       message: 'Unauthorized',
@@ -21,7 +23,6 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get config values
-  const config = useRuntimeConfig()
   const GA_MEASUREMENT_ID = config.public.gaMeasurementId
   const GA_API_SECRET = config.gaApiSecret
 
