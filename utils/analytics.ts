@@ -29,6 +29,42 @@ export const trackEvent = (eventName: string, eventParams: Record<string, any> =
   }
 }
 
+/**
+ * Track a link redirect in Google Analytics
+ * Uses the built-in page_view event with the slug as the path
+ * @param slug The slug that was accessed
+ */
+export const trackRedirect = (slug: string) => {
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      event: 'page_view',
+      page_title: `Redirect: ${slug}`,
+      page_path: `/${slug}`,
+    })
+  }
+}
+
+/**
+ * Helper function for future Google Analytics API integration
+ * This provides a consistent format for querying GA data for a specific slug
+ * @param slug The slug to get analytics for
+ * @returns An object with the slug path formatted for Google Analytics
+ */
+export const getGASlugFilter = (slug: string) => {
+  return {
+    pagePath: `/${slug}`,
+    dimensionFilter: {
+      filter: {
+        fieldName: 'pagePath',
+        stringFilter: {
+          matchType: 'EXACT',
+          value: `/${slug}`,
+        },
+      },
+    },
+  }
+}
+
 // Add TypeScript support for the dataLayer
 declare global {
   interface Window {

@@ -2,6 +2,15 @@
 
 This project includes Google Analytics integration as an alternative to Cloudflare Analytics Engine, which is only available with paid Cloudflare plans.
 
+## Dual Analytics Implementation
+
+Sink implements two parallel analytics systems:
+
+1. **Cloudflare Analytics Engine** (when available with paid plans)
+2. **Google Analytics 4** (available for all users)
+
+When Google Analytics is configured, both systems will track link clicks simultaneously. If you're using a free Cloudflare plan, only the Google Analytics data will be available.
+
 ## Setup Instructions
 
 1. Create a Google Analytics 4 (GA4) property in the [Google Analytics console](https://analytics.google.com/).
@@ -20,6 +29,30 @@ This project includes Google Analytics integration as an alternative to Cloudfla
    ```
    NUXT_PUBLIC_GOOGLE_TAG_MANAGER_ID=GTM-XXXXXXX
    ```
+
+## How Link Click Tracking Works
+
+When Google Analytics is configured:
+
+1. When a user accesses a shortened link, the system logs the access in Cloudflare Analytics (if available)
+2. The system then serves a special HTML page with embedded Google Analytics tracking
+3. This page sends a page view event to Google Analytics with the slug path
+4. After a short delay (100ms), the user is automatically redirected to the destination URL
+
+This approach ensures both analytics systems receive the click data without any user-visible delay.
+
+## Viewing Analytics Data
+
+### Cloudflare Analytics
+If you have a paid Cloudflare plan, you can view link analytics in the Sink dashboard as usual.
+
+### Google Analytics
+To view link analytics in Google Analytics:
+
+1. Go to the GA4 dashboard
+2. Navigate to **Reports** → **Engagement** → **Pages and screens**
+3. Look for entries with paths matching your link slugs (e.g., `/abc123`)
+4. The page view count shows how many times each link was accessed
 
 ## Usage
 
