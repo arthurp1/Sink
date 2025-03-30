@@ -2,6 +2,7 @@
 import { AlertCircle } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
+import { storeSiteToken } from '~/utils/auth'
 
 const { t } = useI18n()
 
@@ -18,11 +19,30 @@ const loginFieldConfig = {
 }
 
 const { previewMode } = useRuntimeConfig().public
+const isLoading = ref(false)
+
+// Prefill the token if in dev/preview mode
+onMounted(() => {
+  if (previewMode && process.env.NODE_ENV !== 'production') {
+    // Automatically prefill the SinkCool token in development/preview mode
+    setTimeout(() => {
+      document.querySelector('input[type="password"]').value = 'SinkCool'
+    }, 100)
+  }
+})
 
 async function onSubmit(form) {
+  isLoading.value = true
   try {
+    // Store token in our utility
+    storeSiteToken(form.token)
+    // Also store in original location for backward compatibility
     localStorage.setItem('SinkSiteToken', form.token)
+
+    // Verify the token with the API
     await useAPI('/api/verify')
+
+    // Navigate to dashboard on success
     navigateTo('/dashboard')
   }
   catch (e) {
@@ -30,6 +50,8 @@ async function onSubmit(form) {
     toast.error(t('login.failed'), {
       description: e.message,
     })
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
@@ -58,8 +80,8 @@ async function onSubmit(form) {
             {{ $t('login.preview_token') }} <code class="font-mono text-green-500">SinkCool</code> .
           </AlertDescription>
         </Alert>
-        <Button class="w-full">
-          {{ $t('login.submit') }}
+        <Button class="w-full" :disabled="isLoading">
+          {{ isLoading ? $t('login.loading') : $t('login.submit') }}
         </Button>
       </AutoForm>
     </CardContent>

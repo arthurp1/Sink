@@ -132,3 +132,110 @@ We welcome your contributions and PRs.
 
 1. [Follow Me on X(Twitter)](https://404.li/kai).
 2. [Become a sponsor to on GitHub](https://github.com/sponsors/ccbikai).
+
+## URL Shortener with Analytics
+
+A modern URL shortener application with Google Analytics 4 and Cloudflare Analytics integration.
+
+## Features
+
+- URL shortening with customizable slugs
+- Analytics tracking for link clicks and page views
+- Admin dashboard for monitoring link performance
+- Server-side and client-side tracking
+- Google Analytics 4 integration
+- Cloudflare Analytics support
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18 or newer
+- Nuxt.js 3
+- Google Analytics 4 account
+- Cloudflare account (optional)
+
+### Installation
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/your-repo.git
+   cd your-repo
+   ```
+
+2. Install dependencies
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Edit the `.env` file with your configuration
+   ```bash
+   # Required variables
+   DOMAIN_NAME=yourdomain.com
+   GA_MEASUREMENT_ID=G-XXXXXXXXXX
+   GA_API_SECRET=your_api_secret_here
+   
+   # Optional variables
+   GOOGLE_TAG_MANAGER_ID=GTM-XXXXXXX
+   ```
+
+5. Start the development server
+   ```bash
+   npm run dev
+   ```
+
+## Environment Variables
+
+### Required Variables
+
+- `DOMAIN_NAME` - Your website's domain name
+- `GA_MEASUREMENT_ID` - Google Analytics 4 Measurement ID (format: G-XXXXXXXXXX)
+- `GA_API_SECRET` - Google Analytics API Secret for server-side tracking
+
+### Optional Variables
+
+- `GOOGLE_TAG_MANAGER_ID` - Google Tag Manager container ID (format: GTM-XXXXXXX)
+- `NODE_ENV` - Environment setting (`development`, `production`)
+
+## Google Analytics Setup
+
+1. Create a Google Analytics 4 property in your Google Analytics account
+2. Note your Measurement ID (format: G-XXXXXXXXXX)
+3. Create an API Secret:
+   - Go to: Admin > Data Streams > [Your Stream] > Measurement Protocol API secrets
+   - Create a new API secret
+   - Copy the secret value
+4. Add these values to your `.env` file
+
+## Analytics Dashboard
+
+Access the analytics dashboard at `/admin/analytics` to view:
+
+- Page view metrics
+- Link click events
+- Configuration status
+
+## Deployment
+
+To deploy the application:
+
+1. Set up environment variables in your hosting platform
+2. Build the application:
+   ```bash
+   npm run build
+   ```
+3. Deploy the built application to your hosting service
+
+## Documentation
+
+Additional documentation is available in the `docs` directory:
+- [Analytics Integration](docs/analytics-integration.md)
+
+## License
+
+[MIT License](LICENSE)

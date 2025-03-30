@@ -22,7 +22,6 @@ export default defineNuxtConfig({
     redirectStatusCode: '301',
     linkCacheTtl: 60,
     redirectWithQuery: false,
-    homeURL: '',
     cfAccountId: '',
     cfApiToken: '',
     dataset: 'sink',
@@ -31,16 +30,19 @@ export default defineNuxtConfig({
     caseSensitive: false,
     listQueryLimit: 500,
     disableBotAccessLog: false,
+    gaApiSecret: process.env.GA_API_SECRET || '',
     public: {
       previewMode: '',
       slugDefaultLength: '6',
       googleTagManagerId: process.env.GOOGLE_TAG_MANAGER_ID || '',
+      gaMeasurementId: process.env.GA_MEASUREMENT_ID || '',
+      domainName: process.env.DOMAIN_NAME || 'localhost:3000',
     },
   },
 
   routeRules: {
     '/': {
-      prerender: true,
+      redirect: '/dashboard/links',
     },
     '/dashboard/**': {
       ssr: false,
