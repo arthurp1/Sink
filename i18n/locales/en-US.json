@@ -158,11 +158,18 @@
     "no_more": "No more links",
     "load_failed": "Loading links failed,",
     "download_qr_code": "Download QR Code",
+    "filter": {
+      "clear_filters": "Clear filters",
+      "filters_active": "filter",
+      "filters_active_plural": "filters",
+      "active": "active",
+      "others": "Others"
+    },
     "sort": {
       "newest": "Newest First",
       "oldest": "Oldest First",
-      "url_az": "Original URL A-Z",
-      "url_za": "Original URL Z-A",
+      "url_az": "Domain A-Z",
+      "url_za": "Domain Z-A",
       "slug_az": "Slug A-Z",
       "slug_za": "Slug Z-A",
       "tip": "Experience: Only for loaded links"

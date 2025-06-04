@@ -1,0 +1,26 @@
+# Cursor AI Rules
+
+## Code Quality & Linting
+- Always run `eslint --fix` in the background after making any code changes
+- Automatically fix all ESLint errors and warnings when possible
+- Ensure all code follows the project's ESLint configuration
+- Prefix unused variables with underscore (e.g., `_error`) to comply with unused-imports rules
+- Never leave ESLint errors unresolved
+
+## Development Workflow
+- After each file edit, automatically run linting to catch and fix issues
+- Prioritize clean, lint-free code over speed
+- If ESLint --fix cannot resolve an issue, highlight it for manual review
+- Follow the existing code style and formatting rules
+
+## Vue.js Specific
+- Follow Vue 3 Composition API best practices
+- Ensure proper prop validation and type safety
+- Use consistent naming conventions for components and variables
+- Maintain proper import/export organization
+
+## General Guidelines
+- Write clean, readable, and maintainable code
+- Follow the project's existing patterns and conventions
+- Ensure all changes are backward compatible unless explicitly requested
+- Test functionality after making changes when possible 
