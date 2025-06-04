@@ -27,6 +27,7 @@
     "@unovis/vue": "^1.5.0",
     "@vee-validate/zod": "^4.15.0",
     "@vueuse/core": "^12.2.0",
+    "dayjs": "^1.11.13",
     "fuse.js": "^7.0.0",
     "intl-parse-accept-language": "^1.0.0",
     "lucide-vue-next": "^0.469.0",

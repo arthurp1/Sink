@@ -1,7 +1,8 @@
 <script setup>
 import { useClipboard } from '@vueuse/core'
-import { CalendarPlus2, Copy, CopyCheck, Eraser, Hourglass, Link as LinkIcon, QrCode, SquareChevronDown, SquarePen } from 'lucide-vue-next'
+import { CalendarPlus2, Clipboard as ClipboardIcon, Copy, CopyCheck, Eraser, Hourglass, QrCode, SquareChevronDown, SquarePen } from 'lucide-vue-next'
 import { parseURL } from 'ufo'
+import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 import QRCode from './QRCode.vue'
 
@@ -26,7 +27,9 @@ function getLinkHost(url) {
 const shortLink = computed(() => `${origin}/${props.link.slug}`)
 const linkIcon = computed(() => `https://unavatar.io/${getLinkHost(props.link.url)}?fallback=https://sink.cool/icon.png`)
 
-const { copy, copied } = useClipboard({ source: shortLink.value, copiedDuring: 400 })
+const copyLinkText = computed(() => `aib.club/${props.link.slug}`)
+
+const { copy, copied } = useClipboard({ source: copyLinkText.value, copiedDuring: 400 })
 
 function updateLink(link, type) {
   emit('update:link', link, type)
@@ -34,9 +37,15 @@ function updateLink(link, type) {
 }
 
 function copyLink() {
-  copy(shortLink.value)
+  copy(copyLinkText.value)
   toast(t('links.copy_success'))
 }
+
+function stripUrlPrefix(url) {
+  return url.replace(/^(https?:\/\/)?(www\.)?/, '')
+}
+
+const displayedOriginalUrl = computed(() => stripUrlPrefix(props.link.url))
 </script>
 
 <template>
@@ -93,15 +102,6 @@ function copyLink() {
             </Tooltip>
           </TooltipProvider>
         </div>
-
-        <a
-          :href="link.url"
-          target="_blank"
-          rel="noopener noreferrer"
-          @click.stop
-        >
-          <LinkIcon class="w-5 h-5" />
-        </a>
 
         <Popover @click.stop>
           <PopoverTrigger @click.stop>
@@ -187,7 +187,20 @@ function copyLink() {
           </TooltipProvider>
         </template>
         <Separator orientation="vertical" @click.stop />
-        <span class="truncate" @click.stop>{{ link.url }}</span>
+        <div class="flex items-center gap-1">
+          <ClipboardIcon
+            class="w-4 h-4 text-muted-foreground cursor-pointer"
+            @click.stop="copyLink"
+          />
+          <a
+            :href="link.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="truncate"
+          >
+            {{ displayedOriginalUrl }}
+          </a>
+        </div>
       </div>
     </div>
   </Card>
