@@ -1,10 +1,14 @@
 <script setup>
-import { X } from 'lucide-vue-next'
+import { RefreshCw, X } from 'lucide-vue-next'
 
 const props = defineProps({
   links: {
     type: Array,
     default: () => [],
+  },
+  isLoadingAll: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -37,6 +41,17 @@ function extractMainDomain(url) {
   catch (_error) {
     return url.toLowerCase()
   }
+}
+
+// Get display name for domain (special case for lu.ma)
+function getDisplayName(domain, isOthers) {
+  if (isOthers) {
+    return $t('links.filter.others')
+  }
+  if (domain === 'lu.ma') {
+    return 'luma'
+  }
+  return domain
 }
 
 // Compute domain groups
@@ -83,15 +98,30 @@ const domainTags = computed(() => {
   return tags
 })
 
-function toggleDomain(domainTag) {
+function toggleDomain(domainTag, event) {
   const domain = domainTag.domain
   const index = selectedDomains.value.indexOf(domain)
 
-  if (index > -1) {
-    selectedDomains.value.splice(index, 1)
+  // Check for modifier keys (Command on Mac, Ctrl on Windows/Linux, or Shift)
+  const isMultiSelect = event.metaKey || event.ctrlKey || event.shiftKey
+
+  if (isMultiSelect) {
+    // Multi-select mode: add/remove without affecting others
+    if (index > -1) {
+      selectedDomains.value.splice(index, 1)
+    }
+    else {
+      selectedDomains.value.push(domain)
+    }
   }
   else {
-    selectedDomains.value.push(domain)
+    // Single-select mode: toggle between selected and none
+    if (index > -1) {
+      selectedDomains.value = []
+    }
+    else {
+      selectedDomains.value = [domain]
+    }
   }
 
   emit('update:selectedDomains', selectedDomains.value)
@@ -108,35 +138,40 @@ function isDomainSelected(domain) {
 </script>
 
 <template>
-  <div v-if="domainTags.length" class="space-y-2">
-    <!-- Filter Tags -->
-    <div class="flex flex-wrap gap-1.5">
+  <div v-if="domainTags.length || isLoadingAll" class="space-y-2">
+    <!-- Loading indicator -->
+    <div v-if="isLoadingAll" class="flex items-center gap-2 text-xs text-muted-foreground">
+      <RefreshCw class="w-3 h-3 animate-spin" />
+      <span>Loading all links for accurate filter counts...</span>
+    </div>
+
+    <!-- Filter Tags with inline reset -->
+    <div class="flex flex-wrap gap-1.5 items-center">
       <Badge
         v-for="tag in domainTags"
         :key="tag.domain"
         :variant="isDomainSelected(tag.domain) ? 'default' : 'secondary'"
         class="cursor-pointer hover:bg-primary/80 transition-colors text-xs px-2 py-0.5 h-6"
-        @click="toggleDomain(tag)"
+        :class="{
+          'opacity-70': isLoadingAll,
+          'bg-muted/50 hover:bg-muted/70': tag.isOthers && !isDomainSelected(tag.domain),
+        }"
+        @click="toggleDomain(tag, $event)"
       >
-        <span class="capitalize">{{ tag.isOthers ? $t('links.filter.others') : tag.domain }}</span>
-        <span class="ml-1 opacity-70">({{ tag.count }})</span>
+        <span class="capitalize">{{ getDisplayName(tag.domain, tag.isOthers) }}</span>
+        <span class="ml-1 opacity-70">({{ tag.count }}{{ isLoadingAll ? '+' : '' }})</span>
       </Badge>
-    </div>
 
-    <!-- Clear Filters -->
-    <div v-if="selectedDomains.length" class="flex items-center gap-2">
+      <!-- Inline Reset Button -->
       <Button
+        v-if="selectedDomains.length"
         variant="ghost"
         size="sm"
-        class="h-5 px-1.5 text-xs"
+        class="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
         @click="clearFilters"
       >
-        <X class="w-3 h-3 mr-1" />
-        {{ $t('links.filter.clear_filters') }}
+        <X class="w-3 h-3" />
       </Button>
-      <span class="text-xs text-muted-foreground">
-        {{ selectedDomains.length }} {{ selectedDomains.length !== 1 ? $t('links.filter.filters_active_plural') : $t('links.filter.filters_active') }} {{ $t('links.filter.active') }}
-      </span>
     </div>
   </div>
 </template>

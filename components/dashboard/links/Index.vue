@@ -3,6 +3,7 @@ import { useInfiniteScroll } from '@vueuse/core'
 import { Loader } from 'lucide-vue-next'
 
 const links = ref([])
+const allLinks = ref([]) // Cache for all links for filter counts
 const limit = 24
 let cursor = ''
 let listComplete = false
@@ -10,6 +11,7 @@ let listError = false
 
 const sortBy = ref('newest')
 const selectedDomains = ref([])
+const isLoadingAllLinks = ref(false)
 
 // Extract the main domain from URL for smart sorting
 function extractMainDomain(url) {
@@ -120,6 +122,47 @@ async function getLinks() {
   }
 }
 
+// Background function to fetch all links for accurate filter counts
+async function getAllLinksInBackground() {
+  if (isLoadingAllLinks.value)
+    return
+
+  isLoadingAllLinks.value = true
+  try {
+    let allLinksCursor = ''
+    let allLinksComplete = false
+    const tempAllLinks = []
+
+    // Fetch all links in parallel batches
+    while (!allLinksComplete) {
+      const data = await useAPI('/api/link/list', {
+        query: {
+          limit: 100, // Larger batch size for background loading
+          cursor: allLinksCursor,
+        },
+      })
+
+      if (data.links) {
+        tempAllLinks.push(...data.links.filter(Boolean))
+      }
+
+      allLinksCursor = data.cursor
+      allLinksComplete = data.list_complete
+
+      if (!allLinksCursor || allLinksComplete)
+        break
+    }
+
+    allLinks.value = tempAllLinks
+  }
+  catch (error) {
+    console.error('Error loading all links for filters:', error)
+  }
+  finally {
+    isLoadingAllLinks.value = false
+  }
+}
+
 const { isLoading } = useInfiniteScroll(
   document,
   getLinks,
@@ -136,16 +179,36 @@ function updateLinkList(link, type) {
   if (type === 'edit') {
     const index = links.value.findIndex(l => l.id === link.id)
     links.value[index] = link
+
+    // Also update in allLinks cache
+    const allIndex = allLinks.value.findIndex(l => l.id === link.id)
+    if (allIndex > -1) {
+      allLinks.value[allIndex] = link
+    }
   }
   else if (type === 'delete') {
     const index = links.value.findIndex(l => l.id === link.id)
     links.value.splice(index, 1)
+
+    // Also remove from allLinks cache
+    const allIndex = allLinks.value.findIndex(l => l.id === link.id)
+    if (allIndex > -1) {
+      allLinks.value.splice(allIndex, 1)
+    }
   }
   else {
     links.value.unshift(link)
     sortBy.value = 'newest'
+
+    // Also add to allLinks cache
+    allLinks.value.unshift(link)
   }
 }
+
+// Start background loading when component mounts
+onMounted(() => {
+  getAllLinksInBackground()
+})
 </script>
 
 <template>
@@ -160,7 +223,8 @@ function updateLinkList(link, type) {
       <LazyDashboardLinksSearch />
     </div>
     <DashboardLinksDomainFilter
-      :links="links"
+      :links="allLinks.length > links.length ? allLinks : links"
+      :is-loading-all="isLoadingAllLinks"
       @update:selected-domains="selectedDomains = $event"
     />
     <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -177,12 +241,7 @@ function updateLinkList(link, type) {
     >
       <Loader class="animate-spin" />
     </div>
-    <div
-      v-if="!isLoading && listComplete"
-      class="flex items-center justify-center text-sm"
-    >
-      {{ $t('links.no_more') }}
-    </div>
+
     <div
       v-if="listError"
       class="flex items-center justify-center text-sm"
