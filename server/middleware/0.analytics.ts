@@ -25,8 +25,8 @@ export default eventHandler(async (event) => {
     if (!cloudflare) {
       if (isDevMode) {
         console.warn('0.analytics: Cloudflare context not available')
-        setResponseHeader(event, 'X-Analytics-Error', 'no-cloudflare-context')
       }
+      setResponseHeader(event, 'X-Analytics-Error', 'no-cloudflare-context')
       return
     }
 
@@ -49,8 +49,8 @@ export default eventHandler(async (event) => {
       if (!link) {
         if (isDevMode) {
           console.warn(`0.analytics: No link found for slug: ${slug}`)
-          setResponseHeader(event, 'X-Analytics-Error', 'link-not-found')
         }
+        setResponseHeader(event, 'X-Analytics-Error', 'link-not-found')
         return
       }
 
@@ -59,18 +59,13 @@ export default eventHandler(async (event) => {
         event.context.link = link
       }
 
-      // We'll use Nitro's built-in fetch to send an event to Google Analytics
-      // This is more reliable than client-side JS which may not execute during redirects
+      // Prepare analytics data
       const measurementId = gaMeasurementId
       const analyticsEndpoint = `https://www.google-analytics.com/mp/collect?measurement_id=${measurementId}&api_secret=${apiSecret}`
 
-      const clientId = getHeader(event, 'cf-connecting-ip') || getRequestIP(event) || '555' // Anonymous client ID as fallback
+      const clientId = getHeader(event, 'cf-connecting-ip') || getRequestIP(event) || '555'
       const userAgent = getHeader(event, 'user-agent') || ''
-
-      // Get the actual target URL from link for enhanced event tracking
       const targetUrl = link.url || ''
-
-      // Make sure the domain is set, falling back to localhost if not configured
       const domain = domainName || 'localhost:3000'
       const host = getHeader(event, 'host') || domain
 
@@ -82,11 +77,10 @@ export default eventHandler(async (event) => {
           name: 'page_view',
           params: {
             page_title: `Redirect: ${slug}`,
-            page_location: `https://${host}/${slug}`, // Use actual host from request
+            page_location: `https://${host}/${slug}`,
             page_path: `/${slug}`,
           },
         }, {
-          // Add a custom event for link clicks with more detailed parameters
           name: 'link_click',
           params: {
             slug,
@@ -94,7 +88,6 @@ export default eventHandler(async (event) => {
             referrer: getHeader(event, 'referer') || '',
           },
         }, {
-          // Add the custom 'redirect' event as requested
           name: 'redirect',
           params: {
             slug,
@@ -107,7 +100,6 @@ export default eventHandler(async (event) => {
             event_label: slug,
           },
         }, {
-          // Add another custom event specifically for redirects to ensure consistent tracking
           name: 'custom_redirect',
           params: {
             slug,
@@ -120,64 +112,73 @@ export default eventHandler(async (event) => {
         }],
       }
 
-      // For debugging, log the payload in development
-      if (isDevMode) {
-        console.log('0.analytics payload:', JSON.stringify(payload, null, 2))
-      }
-
-      // Send the event to Google Analytics asynchronously
-      // We don't await this to avoid slowing down the redirect
-      fetch(analyticsEndpoint, {
+      // Create the analytics promise
+      const analyticsPromise = fetch(analyticsEndpoint, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
         },
-      }).then((response) => {
+      }).then(async (response) => {
         if (!response.ok) {
-          console.error('0.analytics error:', response.status, response.statusText)
-          if (isDevMode) {
-            response.text().then((text) => {
-              console.error('0.analytics error response:', text)
-            }).catch((e) => {
-              console.error('Could not get response text:', e)
-            })
-          }
+          const errorText = await response.text()
+          console.error(`0.analytics error: ${response.status} ${response.statusText}`)
+          console.error('0.analytics error response:', errorText)
+          setResponseHeader(event, 'X-Analytics-Error', `ga-api-error-${response.status}`)
+          return { success: false, status: response.status, error: errorText }
         }
         else {
           if (isDevMode) {
             console.log('0.analytics event sent successfully!')
-            setResponseHeader(event, 'X-Analytics-Debug', 'success')
           }
+          setResponseHeader(event, 'X-Analytics-Debug', 'success')
+          return { success: true, status: response.status }
         }
-      }).catch((error) => {
-        console.error('0.analytics failed to send event:', error)
+      }).catch((fetchError) => {
+        console.error('0.analytics fetch failed:', fetchError)
+        setResponseHeader(event, 'X-Analytics-Error', 'fetch-failed')
+        return { success: false, error: fetchError.message }
       })
 
-      // Always add a tracking header so we know 0.analytics attempted to track
+      // Critical: Use waitUntil to ensure analytics completes
+      // This prevents the Worker from terminating before the GA request finishes
+      if (typeof event.waitUntil === 'function') {
+        event.waitUntil(analyticsPromise)
+      }
+      else if (event.context?.cloudflare?.ctx?.waitUntil) {
+        // Alternative access pattern for Cloudflare context
+        event.context.cloudflare.ctx.waitUntil(analyticsPromise)
+      }
+      else {
+        // Fallback: await the promise to ensure completion
+        await analyticsPromise
+      }
+
+      // Set success headers
       setResponseHeader(event, 'X-Analytics-Tracked', 'server-side')
       setResponseHeader(event, 'X-Analytics-Source', '0.analytics')
     }
     catch (linkError) {
       console.error('0.analytics link lookup error:', linkError)
-      if (isDevMode) {
-        setResponseHeader(event, 'X-Analytics-Error', 'link-lookup-failed')
-      }
+      setResponseHeader(event, 'X-Analytics-Error', 'link-lookup-failed')
     }
   }
-  else if (isDevMode) {
+  else {
     // More detailed logging about why tracking didn't happen
     if (!gaMeasurementId) {
-      console.warn('0.analytics: Google Analytics not configured - Missing GA_MEASUREMENT_ID environment variable')
+      console.warn('0.analytics: Missing GA_MEASUREMENT_ID')
       setResponseHeader(event, 'X-Analytics-Error', 'missing-measurement-id')
     }
     else if (!apiSecret) {
-      console.warn('0.analytics: Google Analytics not configured - Missing GA_API_SECRET environment variable')
+      console.warn('0.analytics: Missing GA_API_SECRET')
       setResponseHeader(event, 'X-Analytics-Error', 'missing-api-secret')
     }
     else if (!slug || reserveSlug.includes(slug) || !slugRegex.test(slug)) {
-      console.warn('0.analytics: Not tracking - Invalid or reserved slug')
+      console.warn('0.analytics: Invalid or reserved slug')
       setResponseHeader(event, 'X-Analytics-Error', 'invalid-slug')
+    }
+    else {
+      setResponseHeader(event, 'X-Analytics-Error', 'unknown-condition')
     }
   }
 })

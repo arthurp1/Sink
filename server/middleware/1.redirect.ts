@@ -48,11 +48,101 @@ export default eventHandler(async (event) => {
         // that will automatically redirect after ensuring GA script is loaded
         if (gaMeasurementId && gaMeasurementId !== 'G-XXXXXXX') {
           setResponseHeader(event, 'Content-Type', 'text/html')
+
+          // Extract metadata for better previews
+          const pageTitle = link.title || `Redirecting to ${new URL(target).hostname}` || `Redirect: ${slug}`
+          const pageDescription = link.description || `Redirecting you to ${target}` || `You will be redirected to ${target}`
+          const pageImage = link.image || '/icon-192.png' // Default to site icon
+          const siteName = 'AIB Shorten URLs'
+          const canonicalUrl = `https://${getHeader(event, 'host') || 'aib.club'}/${slug}`
+
           return `<!DOCTYPE html>
-          <html>
+          <html lang="en">
           <head>
-            <title>Redirecting...</title>
+            <meta charset="utf-8">
+            <title>${pageTitle}</title>
+            <meta name="description" content="${pageDescription}">
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website">
+            <meta property="og:url" content="${canonicalUrl}">
+            <meta property="og:title" content="${pageTitle}">
+            <meta property="og:description" content="${pageDescription}">
+            <meta property="og:image" content="${pageImage}">
+            <meta property="og:site_name" content="${siteName}">
+            
+            <!-- Twitter -->
+            <meta property="twitter:card" content="summary_large_image">
+            <meta property="twitter:url" content="${canonicalUrl}">
+            <meta property="twitter:title" content="${pageTitle}">
+            <meta property="twitter:description" content="${pageDescription}">
+            <meta property="twitter:image" content="${pageImage}">
+            
+            <!-- Canonical URL -->
+            <link rel="canonical" href="${canonicalUrl}">
+            
+            <!-- Favicon -->
+            <link rel="icon" href="/favicon.ico">
+            <link rel="apple-touch-icon" href="/icon-192.png">
+            
+            <!-- Reduce flash with styling -->
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+                background: #ffffff;
+                color: #333;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                text-align: center;
+              }
+              .container {
+                max-width: 500px;
+                padding: 2rem;
+              }
+              h1 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+                color: #2563eb;
+              }
+              p {
+                font-size: 1rem;
+                margin-bottom: 1.5rem;
+                color: #6b7280;
+              }
+              .spinner {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 3px solid #f3f4f6;
+                border-radius: 50%;
+                border-top-color: #2563eb;
+                animation: spin 1s ease-in-out infinite;
+              }
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+              .destination {
+                font-size: 0.875rem;
+                color: #9ca3af;
+                word-break: break-all;
+                margin-top: 1rem;
+              }
+              /* Hide content until page loads to prevent flash */
+              .container {
+                opacity: 0;
+                animation: fadeIn 0.3s ease-in-out forwards;
+              }
+              @keyframes fadeIn {
+                to { opacity: 1; }
+              }
+            </style>
+            
             <!-- Google tag (gtag.js) -->
             <script async src="https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}"></script>
             <script>
@@ -63,7 +153,7 @@ export default eventHandler(async (event) => {
 
               // Track the page view event - this is a GA4 best practice for proper page view tracking
               gtag('config', '${gaMeasurementId}', {
-                page_title: 'Redirect: ${slug}',
+                page_title: '${pageTitle.replace(/'/g, '\\\'')}',
                 page_path: '/${slug}',
                 page_location: window.location.href
               });
@@ -71,7 +161,7 @@ export default eventHandler(async (event) => {
               // Track the custom redirect event
               gtag('event', 'redirect', {
                 slug: '${slug}',
-                destination: '${target}',
+                destination: '${target.replace(/'/g, '\\\'')}',
                 domain: window.location.hostname,
                 referrer: document.referrer || '',
                 timestamp: new Date().toISOString(),
@@ -82,7 +172,7 @@ export default eventHandler(async (event) => {
               // Also track a custom event specifically for redirects
               gtag('event', 'custom_redirect', {
                 slug: '${slug}',
-                destination: '${target}',
+                destination: '${target.replace(/'/g, '\\\'')}',
                 domain: window.location.hostname,
                 referrer: document.referrer || '',
                 timestamp: new Date().toISOString()
@@ -90,12 +180,17 @@ export default eventHandler(async (event) => {
 
               // Redirect after a tiny delay to ensure tracking is sent
               setTimeout(function() {
-                window.location.href = "${target}";
+                window.location.href = "${target.replace(/"/g, '&quot;')}";
               }, 100); // Slightly longer delay to ensure all tracking events are sent
             </script>
           </head>
           <body>
-            <p>Redirecting to ${target}...</p>
+            <div class="container">
+              <h1>Redirecting...</h1>
+              <div class="spinner"></div>
+              <p>You will be redirected momentarily</p>
+              <div class="destination">Destination: ${new URL(target).hostname}</div>
+            </div>
           </body>
           </html>`
         }

@@ -149,13 +149,16 @@ function isDomainSelected(domain) {
     <div class="flex flex-wrap gap-1.5 items-center">
       <Badge
         v-for="tag in domainTags"
-        :key="tag.domain"
-        :variant="isDomainSelected(tag.domain) ? 'default' : 'secondary'"
-        class="cursor-pointer hover:bg-primary/80 transition-colors text-xs px-2 py-0.5 h-6"
-        :class="{
-          'opacity-70': isLoadingAll,
-          'bg-muted/50 hover:bg-muted/70': tag.isOthers && !isDomainSelected(tag.domain),
-        }"
+        :key="`tag-${tag.domain}`"
+        :variant="isDomainSelected(tag.domain) ? 'default' : (tag.isOthers ? 'outline' : 'secondary')"
+        class="cursor-pointer transition-colors text-xs px-2 py-0.5 h-6"
+        :class="[
+          {
+            'opacity-70': isLoadingAll,
+            'hover:bg-primary/80': !tag.isOthers || isDomainSelected(tag.domain),
+            'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground border-muted': tag.isOthers && !isDomainSelected(tag.domain),
+          },
+        ]"
         @click="toggleDomain(tag, $event)"
       >
         <span class="capitalize">{{ getDisplayName(tag.domain, tag.isOthers) }}</span>
