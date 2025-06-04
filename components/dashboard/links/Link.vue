@@ -1,6 +1,6 @@
 <script setup>
 import { useClipboard } from '@vueuse/core'
-import { CalendarPlus2, Clipboard as ClipboardIcon, Copy, CopyCheck, Eraser, Hourglass, QrCode, SquareChevronDown, SquarePen } from 'lucide-vue-next'
+import { Clipboard as ClipboardIcon, Copy, CopyCheck, Eraser, Hourglass, QrCode, SquareChevronDown, SquarePen } from 'lucide-vue-next'
 import { parseURL } from 'ufo'
 import { computed } from 'vue'
 import { toast } from 'vue-sonner'
@@ -86,6 +86,10 @@ function copyOriginalLink() {
   copyOriginal(displayedOriginalUrl.value)
   toast(t('links.copy_success'))
 }
+
+function navigateToOriginalUrl() {
+  window.open(props.link.url, '_blank')
+}
 </script>
 
 <template>
@@ -150,7 +154,6 @@ function copyOriginalLink() {
           <PopoverContent @click.stop>
             <QRCode
               :data="shortLink"
-              :image="linkIcon"
             />
           </PopoverContent>
         </Popover>
@@ -197,11 +200,11 @@ function copyOriginalLink() {
           </PopoverContent>
         </Popover>
       </div>
-      <div class="flex w-full space-x-2 text-sm mt-auto opacity-60">
+      <div class="flex items-center text-sm mt-auto opacity-60 h-5">
         <TooltipProvider @click.stop>
           <Tooltip @click.stop>
             <TooltipTrigger as-child @click.stop>
-              <span class="inline-flex items-center leading-5"><CalendarPlus2 class="w-4 h-4 mr-1" /> {{ shortDate(link.createdAt) }}</span>
+              <span class="shrink-0">{{ shortDate(link.createdAt) }}</span>
             </TooltipTrigger>
             <TooltipContent @click.stop>
               <p>Created At: {{ longDate(link.createdAt) }}</p>
@@ -210,11 +213,11 @@ function copyOriginalLink() {
           </Tooltip>
         </TooltipProvider>
         <template v-if="link.expiration">
-          <Separator orientation="vertical" @click.stop />
+          <Separator orientation="vertical" class="mx-2" @click.stop />
           <TooltipProvider @click.stop>
             <Tooltip @click.stop>
               <TooltipTrigger as-child @click.stop>
-                <span class="inline-flex items-center leading-5"><Hourglass class="w-4 h-4 mr-1" /> {{ shortDate(link.expiration) }}</span>
+                <span class="inline-flex items-center shrink-0"><Hourglass class="w-4 h-4 mr-1" /> {{ shortDate(link.expiration) }}</span>
               </TooltipTrigger>
               <TooltipContent @click.stop>
                 <p>Expires At: {{ longDate(link.expiration) }}</p>
@@ -222,11 +225,26 @@ function copyOriginalLink() {
             </Tooltip>
           </TooltipProvider>
         </template>
-        <Separator orientation="vertical" @click.stop />
-        <TooltipProvider>
+        <Separator orientation="vertical" class="mx-2" @click.stop />
+        <Copy
+          v-if="!copiedOriginal"
+          class="w-4 h-4 shrink-0 text-muted-foreground cursor-pointer mr-1"
+          @click.stop="copyOriginalLink"
+        />
+        <CopyCheck
+          v-else
+          class="w-4 h-4 shrink-0 text-muted-foreground mr-1"
+        />
+        <span
+          class="truncate text-muted-foreground cursor-pointer hover:underline flex-1 min-w-0"
+          @click.stop="navigateToOriginalUrl"
+        >
+          {{ displayedOriginalUrl }}
+        </span>
+        <TooltipProvider class="ml-2">
           <Tooltip>
             <TooltipTrigger as-child>
-              <span class="inline-flex items-center leading-5">
+              <span class="inline-flex items-center shrink-0">
                 <ClipboardIcon class="w-4 h-4 mr-1" />
                 {{ kFormatter(link.clicks) }}
               </span>
@@ -236,22 +254,6 @@ function copyOriginalLink() {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      </div>
-      <div
-        class="flex items-center cursor-pointer text-sm"
-        @click="copyOriginalLink"
-      >
-        <span class="truncate text-muted-foreground">
-          {{ displayedOriginalUrl }}
-        </span>
-        <CopyCheck
-          v-if="copiedOriginal"
-          class="w-4 h-4 ml-1 shrink-0"
-        />
-        <Copy
-          v-else
-          class="w-4 h-4 ml-1 shrink-0"
-        />
       </div>
     </div>
   </Card>

@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import { blobsMap } from '@/server/utils/access-log'
 import QRCodeStyling from 'qr-code-styling'
 import { z } from 'zod'
@@ -46,23 +47,28 @@ export default eventHandler(async (event) => {
   let qrCodeImage = null
 
   try {
-    // We want to keep this QR generation logic similar to the frontend QRCode.vue component
+    // Enhanced QR generation with higher resolution and transparent background
     const qrCode = new QRCodeStyling({
-      width: 384, // Increased by 1.5x
-      height: 384, // Increased by 1.5x
+      width: 512, // Higher resolution
+      height: 512, // Higher resolution
       data: shortLink,
-      margin: 10,
+      margin: 20,
       qrOptions: { typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'Q' },
-      imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 2 },
+      imageOptions: { hideBackgroundDots: true, imageSize: 0.3, margin: 4 },
       dotsOptions: { type: 'dots', color: '#000000' },
-      backgroundOptions: { color: 'transparent' },
-      image: faviconUrl,
+      backgroundOptions: { color: 'transparent' }, // Transparent background
+      image: '/icon-192.png', // Use the AI Builders icon
       cornersSquareOptions: { type: 'extra-rounded', color: '#000000' },
       cornersDotOptions: { type: 'dot', color: '#000000' },
     })
 
-    const qrDataUrl = await qrCode.getDataUrl()
-    qrCodeImage = qrDataUrl
+    const qrBlob = await qrCode.getRawData('png')
+    if (qrBlob) {
+      // Convert blob to base64 data URL
+      const buffer = await qrBlob.arrayBuffer()
+      const base64 = Buffer.from(buffer).toString('base64')
+      qrCodeImage = `data:image/png;base64,${base64}`
+    }
   }
   catch (error: any) {
     console.error('Failed to generate QR code:', error)
@@ -97,8 +103,8 @@ export default eventHandler(async (event) => {
               const logData = {}
               Object.keys(blobsMap).forEach((key) => {
                 if (row[key] !== undefined) {
-                  const fieldName = blobsMap[key]
-                  logData[fieldName] = row[key]
+                  const fieldName = blobsMap[key as keyof typeof blobsMap]
+                  ;(logData as any)[fieldName] = row[key]
                 }
               })
               return {
@@ -130,7 +136,7 @@ export default eventHandler(async (event) => {
       }
     }
   }
-  catch (error) {
+  catch (error: any) {
     console.error('Failed to fetch analytics:', error)
     analytics = {
       error: 'Failed to fetch analytics data',

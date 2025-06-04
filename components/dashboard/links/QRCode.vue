@@ -7,22 +7,18 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  image: {
-    type: String,
-    default: '',
-  },
 })
 const color = ref('#000000')
 const options = {
-  width: 256,
-  height: 256,
+  width: 512,
+  height: 512,
   data: props.data,
-  margin: 10,
+  margin: 20,
   qrOptions: { typeNumber: '0', mode: 'Byte', errorCorrectionLevel: 'Q' },
-  imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 2 },
+  imageOptions: { hideBackgroundDots: true, imageSize: 0.3, margin: 4 },
   dotsOptions: { type: 'dots', color: '#000000', gradient: null },
-  backgroundOptions: { color: '#ffffff', gradient: null },
-  image: props.image,
+  backgroundOptions: { color: 'transparent', gradient: null },
+  image: '/icon-192.png',
   dotsOptionsHelper: {
     colorType: { single: true, gradient: false },
     gradient: {
@@ -60,8 +56,8 @@ const options = {
     gradient: {
       linear: true,
       radial: false,
-      color1: '#ffffff',
-      color2: '#ffffff',
+      color1: 'transparent',
+      color2: 'transparent',
       rotation: '0',
     },
   },
@@ -100,9 +96,12 @@ onMounted(() => {
     <div
       ref="qrCodeEl"
       :data-text="data"
-      class="bg-white p-1 rounded-lg"
+      class="rounded-lg"
     />
-    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+    <p class="text-sm font-bold text-gray-800 dark:text-gray-200 mt-2">
+      aib.club/{{ data.split('/').pop() }}
+    </p>
+    <p class="text-sm text-gray-500 dark:text-gray-400">
       <a
         :href="data"
         target="_blank"

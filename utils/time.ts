@@ -36,12 +36,17 @@ export function shortDate(unix = 0) {
     return rtf.format(-seconds, 'second')
   }
 
-  const shortDate = new Intl.DateTimeFormat(undefined, {
+  // Check if date is from current year
+  const currentYear = now.getFullYear()
+  const dateYear = date.getFullYear()
+  const isCurrentYear = currentYear === dateYear
+
+  const dateFormatter = new Intl.DateTimeFormat(undefined, {
     day: '2-digit',
     month: 'short',
-    year: '2-digit',
+    ...(isCurrentYear ? {} : { year: '2-digit' }),
   })
-  return shortDate.format(date)
+  return dateFormatter.format(date)
 }
 
 export function longDate(unix = 0) {
