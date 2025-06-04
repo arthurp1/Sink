@@ -119,7 +119,8 @@ export default eventHandler(async (event) => {
       })
 
       // Always add a tracking header so the client knows we attempted to track
-      setResponseHeader(event, 'X-Analytics-Tracked', 'true')
+      setResponseHeader(event, 'X-Analytics-Tracked', 'server-side')
+      setResponseHeader(event, 'X-Analytics-Source', '0.analytics')
     }
     catch (error) {
       console.error('Analytics error:', error)

@@ -151,7 +151,7 @@ function navigateToOriginalUrl() {
               class="w-5 h-5 cursor-pointer"
             />
           </PopoverTrigger>
-          <PopoverContent @click.stop>
+          <PopoverContent class="w-auto max-w-sm p-3" @click.stop>
             <QRCode
               :data="shortLink"
             />

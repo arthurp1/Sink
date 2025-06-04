@@ -8,74 +8,34 @@ const props = defineProps({
     required: true,
   },
 })
+
 const color = ref('#000000')
-const options = {
+const showFavicon = ref(true)
+const whiteBackground = ref(false)
+
+const computedOptions = computed(() => ({
   width: 512,
   height: 512,
   data: props.data,
   margin: 20,
   qrOptions: { typeNumber: '0', mode: 'Byte', errorCorrectionLevel: 'Q' },
   imageOptions: { hideBackgroundDots: true, imageSize: 0.3, margin: 4 },
-  dotsOptions: { type: 'dots', color: '#000000', gradient: null },
-  backgroundOptions: { color: 'transparent', gradient: null },
-  image: '/icon-192.png',
-  dotsOptionsHelper: {
-    colorType: { single: true, gradient: false },
-    gradient: {
-      linear: true,
-      radial: false,
-      color1: '#6a1a4c',
-      color2: '#6a1a4c',
-      rotation: '0',
-    },
-  },
-  cornersSquareOptions: { type: 'extra-rounded', color: '#000000' },
-  cornersSquareOptionsHelper: {
-    colorType: { single: true, gradient: false },
-    gradient: {
-      linear: true,
-      radial: false,
-      color1: '#000000',
-      color2: '#000000',
-      rotation: '0',
-    },
-  },
-  cornersDotOptions: { type: 'dot', color: '#000000' },
-  cornersDotOptionsHelper: {
-    colorType: { single: true, gradient: false },
-    gradient: {
-      linear: true,
-      radial: false,
-      color1: '#000000',
-      color2: '#000000',
-      rotation: '0',
-    },
-  },
-  backgroundOptionsHelper: {
-    colorType: { single: true, gradient: false },
-    gradient: {
-      linear: true,
-      radial: false,
-      color1: 'transparent',
-      color2: 'transparent',
-      rotation: '0',
-    },
-  },
-}
+  dotsOptions: { type: 'dots', color: color.value, gradient: null },
+  backgroundOptions: { color: whiteBackground.value ? '#ffffff' : 'transparent', gradient: null },
+  image: showFavicon.value ? '/icon-192.png' : undefined,
+  cornersSquareOptions: { type: 'extra-rounded', color: color.value },
+  cornersDotOptions: { type: 'dot', color: color.value },
+}))
 
-const qrCode = new QRCodeStyling(options)
+const qrCode = new QRCodeStyling(computedOptions.value)
 const qrCodeEl = ref(null)
 
-function updateColor(newColor) {
-  qrCode.update({
-    dotsOptions: { type: 'dots', color: newColor, gradient: null },
-    cornersSquareOptions: { type: 'extra-rounded', color: newColor },
-    cornersDotOptions: { type: 'dot', color: newColor },
-  })
+function updateQRCode() {
+  qrCode.update(computedOptions.value)
 }
 
-watch(color, (newColor) => {
-  updateColor(newColor)
+watch([color, showFavicon, whiteBackground], () => {
+  updateQRCode()
 })
 
 function downloadQRCode() {
@@ -92,47 +52,81 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-4">
+  <div class="flex flex-col gap-3 w-full min-w-0">
+    <!-- QR Code Display -->
     <div
       ref="qrCodeEl"
       :data-text="data"
-      class="rounded-lg"
+      class="w-full aspect-square rounded-lg overflow-hidden"
+      :class="{ 'bg-white': whiteBackground }"
     />
-    <p class="text-sm font-bold text-gray-800 dark:text-gray-200 mt-2">
-      aib.club/{{ data.split('/').pop() }}
-    </p>
-    <p class="text-sm text-gray-500 dark:text-gray-400">
-      <a
-        :href="data"
-        target="_blank"
-        class="text-blue-500 hover:underline"
-      >
-        {{ data.replace('https://', '') }}
-      </a>
-    </p>
-    <div class="flex items-center gap-4">
-      <div class="relative flex items-center">
-        <div
-          class="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 cursor-pointer overflow-hidden"
-          :style="{ backgroundColor: color }"
-          title="Change QR code color"
+
+    <!-- Compact Info -->
+    <div class="text-center space-y-1">
+      <p class="text-xs font-medium">
+        aib.club/{{ data.split('/').pop() }}
+      </p>
+      <p class="text-xs text-muted-foreground truncate">
+        <a
+          :href="data"
+          target="_blank"
+          class="hover:underline"
         >
+          {{ data.replace('https://', '') }}
+        </a>
+      </p>
+    </div>
+
+    <!-- Compact Controls -->
+    <div class="space-y-2">
+      <!-- Checkboxes -->
+      <div class="flex items-center justify-between text-xs gap-2">
+        <label class="flex items-center gap-1.5 cursor-pointer">
           <input
-            v-model="color"
-            type="color"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            v-model="whiteBackground"
+            type="checkbox"
+            class="w-3 h-3"
+          >
+          <span>White background</span>
+        </label>
+        <label class="flex items-center gap-1.5 cursor-pointer">
+          <input
+            v-model="showFavicon"
+            type="checkbox"
+            class="w-3 h-3"
+          >
+          <span>Show favicon</span>
+        </label>
+      </div>
+
+      <!-- Color and Download -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <div
+            class="w-6 h-6 rounded border cursor-pointer overflow-hidden"
+            :style="{ backgroundColor: color }"
             title="Change QR code color"
           >
+            <input
+              v-model="color"
+              type="color"
+              class="absolute w-6 h-6 opacity-0 cursor-pointer"
+              title="Change QR code color"
+            >
+          </div>
+          <span class="text-xs text-muted-foreground">Color</span>
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          class="h-7 px-2 text-xs"
+          @click="downloadQRCode"
+        >
+          <Download class="w-3 h-3 mr-1" />
+          Download
+        </Button>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        @click="downloadQRCode"
-      >
-        <Download class="w-4 h-4 mr-2" />
-        {{ $t('links.download_qr_code') }}
-      </Button>
     </div>
   </div>
 </template>

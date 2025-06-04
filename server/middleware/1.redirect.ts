@@ -41,7 +41,8 @@ export default eventHandler(async (event) => {
 
       // Set a header to indicate this was a tracked redirect
       if (googleTagManagerId || gaMeasurementId) {
-        setResponseHeader(event, 'X-Analytics-Tracked', 'true')
+        setResponseHeader(event, 'X-Analytics-Tracked', 'client-side')
+        setResponseHeader(event, 'X-Analytics-Source', '1.redirect')
 
         // If GA is configured, instead of immediate redirect, we'll return an HTML page with Google Analytics
         // that will automatically redirect after ensuring GA script is loaded

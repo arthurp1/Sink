@@ -37,13 +37,6 @@ useHead({
   script: [
     {
       children: `
-        // Google Tag Manager
-        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer','${config.public.googleTagManagerId || 'GTM-XXXXXXX'}');
-
         // Direct Google Analytics 4 implementation
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
@@ -67,11 +60,9 @@ router.afterEach((to) => {
   if (import.meta.client) {
     // Allow the page to finish rendering before sending the page view
     nextTick(() => {
-      // Page view tracking is handled automatically by the GTM plugin,
-      // this is just an additional way to track specific data if needed
-      if (window.dataLayer) {
-        window.dataLayer.push({
-          event: 'nuxt-route-change',
+      // Track page views with GA4 directly
+      if (window.gtag) {
+        window.gtag('config', config.public.gaMeasurementId || 'G-YTWJTM33GX', {
           page_path: to.fullPath,
           page_title: document.title,
         })
