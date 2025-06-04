@@ -8,7 +8,7 @@ let cursor = ''
 let listComplete = false
 let listError = false
 
-const sortBy = ref('az')
+const sortBy = ref('newest')
 
 const displayedLinks = computed(() => {
   const sorted = [...links.value]
@@ -17,10 +17,10 @@ const displayedLinks = computed(() => {
       return sorted.sort((a, b) => b.createdAt - a.createdAt)
     case 'oldest':
       return sorted.sort((a, b) => a.createdAt - b.createdAt)
-    case 'az':
-      return sorted.sort((a, b) => a.slug.localeCompare(b.slug))
-    case 'za':
-      return sorted.sort((a, b) => b.slug.localeCompare(a.slug))
+    case 'url_az':
+      return sorted.sort((a, b) => a.url.localeCompare(b.url))
+    case 'url_za':
+      return sorted.sort((a, b) => b.url.localeCompare(a.url))
     case 'slug_az':
       return sorted.sort((a, b) => a.slug.localeCompare(b.slug))
     case 'slug_za':

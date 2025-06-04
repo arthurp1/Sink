@@ -161,8 +161,8 @@
     "sort": {
       "newest": "Newest First",
       "oldest": "Oldest First",
-      "az": "Slug A-Z",
-      "za": "Slug Z-A",
+      "url_az": "Original URL A-Z",
+      "url_za": "Original URL Z-A",
       "slug_az": "Slug A-Z",
       "slug_za": "Slug Z-A",
       "tip": "Experience: Only for loaded links"

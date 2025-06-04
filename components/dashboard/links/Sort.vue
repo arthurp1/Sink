@@ -4,7 +4,7 @@ import { ArrowUpDown } from 'lucide-vue-next'
 defineProps({
   sortBy: {
     type: String,
-    default: 'az',
+    default: 'newest',
   },
 })
 
@@ -37,11 +37,11 @@ const emit = defineEmits(['update:sortBy'])
       <DropdownMenuItem @click="emit('update:sortBy', 'oldest')">
         {{ $t('links.sort.oldest') }}
       </DropdownMenuItem>
-      <DropdownMenuItem @click="emit('update:sortBy', 'az')">
-        {{ $t('links.sort.az') }}
+      <DropdownMenuItem @click="emit('update:sortBy', 'url_az')">
+        {{ $t('links.sort.url_az') }}
       </DropdownMenuItem>
-      <DropdownMenuItem @click="emit('update:sortBy', 'za')">
-        {{ $t('links.sort.za') }}
+      <DropdownMenuItem @click="emit('update:sortBy', 'url_za')">
+        {{ $t('links.sort.url_za') }}
       </DropdownMenuItem>
       <DropdownMenuItem @click="emit('update:sortBy', 'slug_az')">
         {{ $t('links.sort.slug_az') }}

@@ -62,7 +62,28 @@ function stripMarketingParams(url) {
 }
 
 const shortLink = computed(() => `${origin}/${props.link.slug}`)
-const linkIcon = computed(() => `https://unavatar.io/${getLinkHost(props.link.url)}?fallback=https://sink.cool/icon.png`)
+const linkIcon = computed(() => {
+  const host = getLinkHost(props.link.url)
+
+  // Special handling for WhatsApp domains
+  if (host && host.includes('whatsapp')) {
+    // For WhatsApp URLs, try multiple approaches for better icon resolution
+    if (host === 'web.whatsapp.com' || host === 'api.whatsapp.com') {
+      // These subdomains might not have good favicons, so use the main whatsapp.com
+      return `https://unavatar.io/whatsapp.com?fallback=https://sink.cool/icon.png`
+    }
+    // For chat.whatsapp.com and other WhatsApp domains, add cache busting
+    return `https://unavatar.io/${host}?fallback=https://sink.cool/icon.png&v=2`
+  }
+
+  // Multi-service high-resolution strategy
+  // 1. Try Google's favicon service (often has higher quality)
+  // 2. Fallback to our own icon as last resort
+  const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${host}&sz=64`
+
+  // Use unavatar.io with Google's service as fallback for better resolution
+  return `https://unavatar.io/${host}?fallback=${encodeURIComponent(googleFaviconUrl)}`
+})
 
 const copyLinkText = computed(() => shortLink.value)
 
