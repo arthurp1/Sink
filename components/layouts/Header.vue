@@ -7,11 +7,11 @@ const showMenu = ref(false)
 
 <template>
   <section>
-    <nav class="container relative z-50 h-16 select-none">
+    <nav class="container relative z-50 h-12 select-none">
       <div
-        class="container relative flex flex-wrap items-center justify-between h-16 px-0 mx-auto overflow-hidden font-medium border-b border-gray-200 md:overflow-visible lg:justify-center"
+        class="container relative flex flex-wrap items-center justify-between h-12 px-0 mx-auto overflow-hidden font-medium md:overflow-visible lg:justify-center"
       >
-        <div class="flex items-center justify-start w-1/4 h-full pr-4">
+        <div class="flex items-center justify-start w-fit h-full pr-4">
           <a
             href="/"
             title="AIB Link Shortener"
@@ -23,7 +23,7 @@ const showMenu = ref(false)
               <img
                 src="/sink.png"
                 alt="AIB Link Shortener"
-                class="w-full h-full rounded-full"
+                class="w-full h-full rounded-full object-cover"
               >
             </span>
             <span class="mx-2">AIB Link Shortener</span>
@@ -49,7 +49,7 @@ const showMenu = ref(false)
                 <img
                   src="/sink.png"
                   alt="AIB Link Shortener"
-                  class="w-full h-full rounded-full"
+                  class="w-full h-full rounded-full object-cover"
                 >
               </span>
               <span class="mx-2">AIB Link Shortener</span>

@@ -17,17 +17,54 @@ const emit = defineEmits(['update:link'])
 const { t } = useI18n()
 const editPopoverOpen = ref(false)
 
-const { host, origin } = location
+const { origin } = location
 
 function getLinkHost(url) {
   const { host } = parseURL(url)
   return host
 }
 
+function stripMarketingParams(url) {
+  try {
+    const urlObj = new URL(url)
+    const params = urlObj.searchParams
+    const marketingParams = [
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_term',
+      'utm_content',
+      'fbclid',
+      'gclid',
+      'msclkid',
+      'mc_cid',
+      'mc_eid',
+      'igshid',
+      's_cid',
+      'ref',
+      'origin_url',
+      'source',
+      'campaign',
+      'medium',
+      'content',
+      'term',
+      'variant_id',
+    ]
+
+    marketingParams.forEach(param => params.delete(param))
+    urlObj.search = params.toString()
+    return urlObj.toString().replace(/^(https?:\/\/(?:www\\.)?)/, '')
+  }
+
+  catch (_e) {
+    return url.replace(/^(https?:\/\/(?:www\\.)?)/, '')
+  }
+}
+
 const shortLink = computed(() => `${origin}/${props.link.slug}`)
 const linkIcon = computed(() => `https://unavatar.io/${getLinkHost(props.link.url)}?fallback=https://sink.cool/icon.png`)
 
-const copyLinkText = computed(() => `aib.club/${props.link.slug}`)
+const copyLinkText = computed(() => shortLink.value)
 
 const { copy, copied } = useClipboard({ source: copyLinkText.value, copiedDuring: 400 })
 
@@ -41,20 +78,16 @@ function copyLink() {
   toast(t('links.copy_success'))
 }
 
-function stripUrlPrefix(url) {
-  return url.replace(/^(https?:\/\/)?(www\.)?/, '')
-}
-
-const displayedOriginalUrl = computed(() => stripUrlPrefix(props.link.url))
+const displayedOriginalUrl = computed(() => stripMarketingParams(props.link.url))
 </script>
 
 <template>
-  <Card class="cursor-pointer" @click="copyLink">
+  <Card class="min-h-[150px]">
     <div
-      class="flex flex-col p-4 space-y-3"
+      class="flex flex-col p-4 space-y-3 h-full"
     >
       <div class="flex items-center justify-center space-x-3">
-        <Avatar @click.stop>
+        <Avatar class="w-6 h-6" @click.stop>
           <AvatarImage
             :src="linkIcon"
             alt="@radix-vue"
@@ -70,20 +103,18 @@ const displayedOriginalUrl = computed(() => stripUrlPrefix(props.link.url))
         </Avatar>
 
         <div class="flex-1 overflow-hidden">
-          <div class="flex items-center">
+          <div class="flex items-center cursor-pointer" @click="copyLink">
             <div class="font-bold leading-5 truncate text-md">
-              {{ host }}/{{ link.slug }}
+              {{ link.slug }}
             </div>
 
             <CopyCheck
               v-if="copied"
               class="w-4 h-4 ml-1 shrink-0"
-              @click.stop
             />
             <Copy
               v-else
               class="w-4 h-4 ml-1 shrink-0"
-              @click.stop="copyLink"
             />
           </div>
 
@@ -104,10 +135,9 @@ const displayedOriginalUrl = computed(() => stripUrlPrefix(props.link.url))
         </div>
 
         <Popover @click.stop>
-          <PopoverTrigger @click.stop>
+          <PopoverTrigger as-child @click.stop>
             <QrCode
-              class="w-5 h-5"
-              @click.stop
+              class="w-5 h-5 cursor-pointer"
             />
           </PopoverTrigger>
           <PopoverContent @click.stop>
@@ -119,10 +149,9 @@ const displayedOriginalUrl = computed(() => stripUrlPrefix(props.link.url))
         </Popover>
 
         <Popover v-model:open="editPopoverOpen" @click.stop>
-          <PopoverTrigger @click.stop>
+          <PopoverTrigger as-child @click.stop>
             <SquareChevronDown
-              class="w-5 h-5"
-              @click.stop
+              class="w-5 h-5 cursor-pointer"
             />
           </PopoverTrigger>
           <PopoverContent
@@ -161,7 +190,7 @@ const displayedOriginalUrl = computed(() => stripUrlPrefix(props.link.url))
           </PopoverContent>
         </Popover>
       </div>
-      <div class="flex w-full h-5 space-x-2 text-sm" @click.stop>
+      <div class="flex w-full space-x-2 text-sm mt-auto">
         <TooltipProvider @click.stop>
           <Tooltip @click.stop>
             <TooltipTrigger as-child @click.stop>
@@ -187,19 +216,21 @@ const displayedOriginalUrl = computed(() => stripUrlPrefix(props.link.url))
           </TooltipProvider>
         </template>
         <Separator orientation="vertical" @click.stop />
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1 flex-grow">
           <ClipboardIcon
             class="w-4 h-4 text-muted-foreground cursor-pointer"
             @click.stop="copyLink"
           />
-          <a
-            :href="link.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="truncate"
-          >
-            {{ displayedOriginalUrl }}
-          </a>
+          <div class="flex-1 flex items-center justify-center">
+            <a
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-left overflow-hidden text-ellipsis line-clamp-2"
+            >
+              {{ displayedOriginalUrl }}
+            </a>
+          </div>
         </div>
       </div>
     </div>

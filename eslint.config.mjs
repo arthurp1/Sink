@@ -13,6 +13,14 @@ export default withNuxt(
       'no-console': 'off',
       'node/prefer-global/process': 'off',
       'vue/no-v-html': 'off',
+      'unused-imports/no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 )
