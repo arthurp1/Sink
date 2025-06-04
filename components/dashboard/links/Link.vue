@@ -79,10 +79,17 @@ function copyLink() {
 }
 
 const displayedOriginalUrl = computed(() => stripMarketingParams(props.link.url))
+
+const { copy: copyOriginal, copied: copiedOriginal } = useClipboard({ source: displayedOriginalUrl.value, copiedDuring: 400 })
+
+function copyOriginalLink() {
+  copyOriginal(displayedOriginalUrl.value)
+  toast(t('links.copy_success'))
+}
 </script>
 
 <template>
-  <Card class="min-h-[150px]">
+  <Card>
     <div
       class="flex flex-col p-4 space-y-3 h-full"
     >
@@ -190,7 +197,7 @@ const displayedOriginalUrl = computed(() => stripMarketingParams(props.link.url)
           </PopoverContent>
         </Popover>
       </div>
-      <div class="flex w-full space-x-2 text-sm mt-auto">
+      <div class="flex w-full space-x-2 text-sm mt-auto opacity-60">
         <TooltipProvider @click.stop>
           <Tooltip @click.stop>
             <TooltipTrigger as-child @click.stop>
@@ -216,22 +223,35 @@ const displayedOriginalUrl = computed(() => stripMarketingParams(props.link.url)
           </TooltipProvider>
         </template>
         <Separator orientation="vertical" @click.stop />
-        <div class="flex items-center gap-1 flex-grow">
-          <ClipboardIcon
-            class="w-4 h-4 text-muted-foreground cursor-pointer"
-            @click.stop="copyLink"
-          />
-          <div class="flex-1 flex items-center justify-center">
-            <a
-              :href="link.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-left overflow-hidden text-ellipsis line-clamp-2"
-            >
-              {{ displayedOriginalUrl }}
-            </a>
-          </div>
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <span class="inline-flex items-center leading-5">
+                <ClipboardIcon class="w-4 h-4 mr-1" />
+                {{ kFormatter(link.clicks) }}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Clicks: {{ link.clicks }}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      <div
+        class="flex items-center cursor-pointer text-sm"
+        @click="copyOriginalLink"
+      >
+        <span class="truncate text-muted-foreground">
+          {{ displayedOriginalUrl }}
+        </span>
+        <CopyCheck
+          v-if="copiedOriginal"
+          class="w-4 h-4 ml-1 shrink-0"
+        />
+        <Copy
+          v-else
+          class="w-4 h-4 ml-1 shrink-0"
+        />
       </div>
     </div>
   </Card>

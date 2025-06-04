@@ -15,14 +15,44 @@ export function getLocale() {
 }
 
 export function shortDate(unix = 0) {
+  const date = new Date(unix * 1000)
+  const now = new Date()
+  const diffTime = Math.abs(now.getTime() - date.getTime())
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays <= 14) {
+    const rtf = new Intl.RelativeTimeFormat(getLocale(), { numeric: 'auto' })
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const hours = Math.floor(minutes / 60)
+    const days = Math.floor(hours / 24)
+
+    if (days > 0)
+      return rtf.format(-days, 'day')
+    if (hours > 0)
+      return rtf.format(-hours, 'hour')
+    if (minutes > 0)
+      return rtf.format(-minutes, 'minute')
+    return rtf.format(-seconds, 'second')
+  }
+
   const shortDate = new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: '2-digit',
   })
-  return shortDate.format(unix * 1000)
+  return shortDate.format(date)
 }
 
 export function longDate(unix = 0) {
-  return new Date(unix * 1000).toLocaleString()
+  return new Date(unix * 1000).toLocaleString(undefined, {
+    day: '2-digit',
+    month: 'short',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
 }
 
 export function date2unix(dateValue: DateValue | Date, type: string) {
