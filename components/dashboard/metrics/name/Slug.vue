@@ -1,13 +1,11 @@
 <script setup>
-import { useToast } from '@/components/ui/toast/use-toast'
 import { Clipboard as ClipboardIcon } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { toast } from 'vue-sonner'
 
 const props = defineProps({
   name: String,
 })
-
-const { toast } = useToast()
 
 const fullUrl = computed(() => `https://aib.club/${props.name}`)
 const copyText = computed(() => `aib.club/${props.name}`)
