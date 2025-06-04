@@ -102,6 +102,15 @@ onMounted(() => {
       :data-text="data"
       class="bg-white p-1 rounded-lg"
     />
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+      <a
+        :href="data"
+        target="_blank"
+        class="text-blue-500 hover:underline"
+      >
+        {{ data.replace('https://', '') }}
+      </a>
+    </p>
     <div class="flex items-center gap-4">
       <div class="relative flex items-center">
         <div

@@ -1,16 +1,14 @@
 <script setup>
-import { NuxtLink } from '#components'
-
 defineProps({
   title: {
     type: String,
     required: true,
   },
 })
-const { title } = useAppConfig()
+// const { title } = useAppConfig()
 </script>
 
-<template>
+<!-- <template>
   <Breadcrumb class="flex justify-between">
     <BreadcrumbList>
       <BreadcrumbItem>
@@ -35,4 +33,4 @@ const { title } = useAppConfig()
 
     <DashboardLogout />
   </Breadcrumb>
-</template>
+</template> -->

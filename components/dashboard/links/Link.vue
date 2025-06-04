@@ -40,13 +40,12 @@ function copyLink() {
 </script>
 
 <template>
-  <Card>
-    <NuxtLink
+  <Card class="cursor-pointer" @click="copyLink">
+    <div
       class="flex flex-col p-4 space-y-3"
-      :to="`/dashboard/link?slug=${link.slug}`"
     >
       <div class="flex items-center justify-center space-x-3">
-        <Avatar>
+        <Avatar @click.stop>
           <AvatarImage
             :src="linkIcon"
             alt="@radix-vue"
@@ -70,23 +69,23 @@ function copyLink() {
             <CopyCheck
               v-if="copied"
               class="w-4 h-4 ml-1 shrink-0"
-              @click.prevent
+              @click.stop
             />
             <Copy
               v-else
               class="w-4 h-4 ml-1 shrink-0"
-              @click.prevent="copyLink"
+              @click.stop="copyLink"
             />
           </div>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
+          <TooltipProvider @click.stop>
+            <Tooltip @click.stop>
+              <TooltipTrigger as-child @click.stop>
                 <p class="text-sm truncate">
                   {{ link.comment || link.title || link.description }}
                 </p>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent @click.stop>
                 <p class="max-w-[90svw] break-all">
                   {{ link.comment || link.title || link.description }}
                 </p>
@@ -104,14 +103,14 @@ function copyLink() {
           <LinkIcon class="w-5 h-5" />
         </a>
 
-        <Popover>
-          <PopoverTrigger>
+        <Popover @click.stop>
+          <PopoverTrigger @click.stop>
             <QrCode
               class="w-5 h-5"
-              @click.prevent
+              @click.stop
             />
           </PopoverTrigger>
-          <PopoverContent>
+          <PopoverContent @click.stop>
             <QRCode
               :data="shortLink"
               :image="linkIcon"
@@ -119,16 +118,17 @@ function copyLink() {
           </PopoverContent>
         </Popover>
 
-        <Popover v-model:open="editPopoverOpen">
-          <PopoverTrigger>
+        <Popover v-model:open="editPopoverOpen" @click.stop>
+          <PopoverTrigger @click.stop>
             <SquareChevronDown
               class="w-5 h-5"
-              @click.prevent
+              @click.stop
             />
           </PopoverTrigger>
           <PopoverContent
             class="w-auto p-0"
             :hide-when-detached="false"
+            @click.stop
           >
             <DashboardLinksEditor
               :link="link"
@@ -161,34 +161,34 @@ function copyLink() {
           </PopoverContent>
         </Popover>
       </div>
-      <div class="flex w-full h-5 space-x-2 text-sm">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger as-child>
+      <div class="flex w-full h-5 space-x-2 text-sm" @click.stop>
+        <TooltipProvider @click.stop>
+          <Tooltip @click.stop>
+            <TooltipTrigger as-child @click.stop>
               <span class="inline-flex items-center leading-5"><CalendarPlus2 class="w-4 h-4 mr-1" /> {{ shortDate(link.createdAt) }}</span>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent @click.stop>
               <p>Created At: {{ longDate(link.createdAt) }}</p>
               <p>Updated At: {{ longDate(link.updatedAt) }}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <template v-if="link.expiration">
-          <Separator orientation="vertical" />
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
+          <Separator orientation="vertical" @click.stop />
+          <TooltipProvider @click.stop>
+            <Tooltip @click.stop>
+              <TooltipTrigger as-child @click.stop>
                 <span class="inline-flex items-center leading-5"><Hourglass class="w-4 h-4 mr-1" /> {{ shortDate(link.expiration) }}</span>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent @click.stop>
                 <p>Expires At: {{ longDate(link.expiration) }}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </template>
-        <Separator orientation="vertical" />
-        <span class="truncate">{{ link.url }}</span>
+        <Separator orientation="vertical" @click.stop />
+        <span class="truncate" @click.stop>{{ link.url }}</span>
       </div>
-    </NuxtLink>
+    </div>
   </Card>
 </template>

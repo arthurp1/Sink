@@ -21,6 +21,10 @@ const displayedLinks = computed(() => {
       return sorted.sort((a, b) => a.slug.localeCompare(b.slug))
     case 'za':
       return sorted.sort((a, b) => b.slug.localeCompare(a.slug))
+    case 'slug_az':
+      return sorted.sort((a, b) => a.slug.localeCompare(b.slug))
+    case 'slug_za':
+      return sorted.sort((a, b) => b.slug.localeCompare(a.slug))
     default:
       return sorted
   }

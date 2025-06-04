@@ -163,6 +163,8 @@
       "oldest": "Oldest First",
       "az": "Slug A-Z",
       "za": "Slug Z-A",
+      "slug_az": "Slug A-Z",
+      "slug_za": "Slug Z-A",
       "tip": "Experience: Only for loaded links"
     }
   }

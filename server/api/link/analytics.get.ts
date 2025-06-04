@@ -1,6 +1,5 @@
 import { blobsMap } from '@/server/utils/access-log'
 import QRCodeStyling from 'qr-code-styling'
-import { parseURL } from 'ufo'
 import { z } from 'zod'
 
 export default eventHandler(async (event) => {
@@ -41,8 +40,7 @@ export default eventHandler(async (event) => {
   const shortLink = `${protocol}://${host}/${slugKey}`
 
   // Get favicon
-  const { host: targetHost } = parseURL(link.url)
-  const faviconUrl = `https://unavatar.io/${targetHost}?fallback=https://sink.cool/icon.png`
+  const faviconUrl = '/icon-192.png' // Use the AI Builders favicon
 
   // Generate QR code image (base64 encoded)
   let qrCodeImage = null
@@ -50,14 +48,14 @@ export default eventHandler(async (event) => {
   try {
     // We want to keep this QR generation logic similar to the frontend QRCode.vue component
     const qrCode = new QRCodeStyling({
-      width: 256,
-      height: 256,
+      width: 384, // Increased by 1.5x
+      height: 384, // Increased by 1.5x
       data: shortLink,
       margin: 10,
-      qrOptions: { typeNumber: '0', mode: 'Byte', errorCorrectionLevel: 'Q' },
+      qrOptions: { typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'Q' },
       imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 2 },
-      dotsOptions: { type: 'dots', color: '#000000', gradient: null },
-      backgroundOptions: { color: '#ffffff', gradient: null },
+      dotsOptions: { type: 'dots', color: '#000000' },
+      backgroundOptions: { color: 'transparent' },
       image: faviconUrl,
       cornersSquareOptions: { type: 'extra-rounded', color: '#000000' },
       cornersDotOptions: { type: 'dot', color: '#000000' },
@@ -66,7 +64,7 @@ export default eventHandler(async (event) => {
     const qrDataUrl = await qrCode.getDataUrl()
     qrCodeImage = qrDataUrl
   }
-  catch (error) {
+  catch (error: any) {
     console.error('Failed to generate QR code:', error)
   }
 
