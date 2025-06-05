@@ -5,14 +5,14 @@ import { Clipboard as ClipboardIcon, Copy, CopyCheck, Eraser, Hourglass, QrCode,
 import { parseURL } from 'ufo'
 import { computed } from 'vue'
 import { toast } from 'vue-sonner'
-import { DashboardLinksDelete } from './DashboardLinksDelete.vue'
-import { DashboardLinksEditor } from './DashboardLinksEditor.vue'
+import { DashboardLinksDelete } from './Delete.vue'
+import { DashboardLinksEditor } from './Editor.vue'
 import QRCode from './QRCode.vue'
 
 const props = defineProps({
   link: {
     type: Object,
-    required: true,
+    default: () => ({}),
   },
 })
 const emit = defineEmits(['update:link'])
