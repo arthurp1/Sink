@@ -1,17 +1,12 @@
 <script setup>
-import { useInfiniteScroll } from '@vueuse/core'
 import { Loader } from 'lucide-vue-next'
 
 const links = ref([])
-const allLinks = ref([]) // Cache for all links for filter counts
-const limit = 24
-let cursor = ''
-let listComplete = false
-let listError = false
+const isLoading = ref(false)
+const loadError = ref(false)
 
 const sortBy = ref('newest')
 const selectedDomains = ref([])
-const isLoadingAllLinks = ref(false)
 
 // Extract the main domain from URL for smart sorting
 function extractMainDomain(url) {
@@ -103,111 +98,71 @@ const displayedLinks = computed(() => {
   }
 })
 
-async function getLinks() {
-  try {
-    const data = await useAPI('/api/link/list', {
-      query: {
-        limit,
-        cursor,
-      },
-    })
-    links.value = links.value.concat(data.links).filter(Boolean) // Sometimes cloudflare will return null, filter out
-    cursor = data.cursor
-    listComplete = data.list_complete
-    listError = false
-  }
-  catch (error) {
-    console.error(error)
-    listError = true
-  }
-}
+async function loadAllLinks() {
+  isLoading.value = true
+  loadError.value = false // Reset error state
+  links.value = [] // Clear existing links before fetching all
 
-// Background function to fetch all links for accurate filter counts
-async function getAllLinksInBackground() {
-  if (isLoadingAllLinks.value)
-    return
-
-  isLoadingAllLinks.value = true
   try {
-    let allLinksCursor = ''
+    let currentCursor = '' // Start with an empty cursor for the first request
     let allLinksComplete = false
-    const tempAllLinks = []
+    let requestCount = 0 // For logging purposes
 
-    // Fetch all links in parallel batches
-    while (!allLinksComplete) {
+    do { // Use a do-while loop to ensure at least one request is made
+      requestCount++
+      console.log(`[Request ${requestCount}] Sending request with cursor: '${currentCursor}'`)
+
       const data = await useAPI('/api/link/list', {
         query: {
-          limit: 100, // Larger batch size for background loading
-          cursor: allLinksCursor,
+          limit: 100, // Fetch in batches of 100
+          cursor: currentCursor,
         },
       })
 
-      if (data.links) {
-        tempAllLinks.push(...data.links.filter(Boolean))
+      const fetchedLinksCount = data.links ? data.links.length : 0
+      console.log(`[Response ${requestCount}] Fetched ${fetchedLinksCount} links. Received cursor: '${data.cursor}', List Complete: ${data.list_complete}`)
+
+      if (data.links && Array.isArray(data.links) && data.links.length > 0) {
+        links.value.push(...data.links.filter(Boolean))
       }
 
-      allLinksCursor = data.cursor
-      allLinksComplete = data.list_complete
-
-      if (!allLinksCursor || allLinksComplete)
-        break
-    }
-
-    allLinks.value = tempAllLinks
+      currentCursor = data.cursor // Update cursor for the next iteration
+      allLinksComplete = data.list_complete // Update completion flag
+      console.log(`[Status ${requestCount}] Total links accumulated: ${links.value.length}`)
+    } while (!allLinksComplete && currentCursor) // Continue if not complete AND a cursor for the next batch exists
   }
   catch (error) {
-    console.error('Error loading all links for filters:', error)
+    console.error('Error loading all links:', error)
+    loadError.value = true
   }
   finally {
-    isLoadingAllLinks.value = false
+    isLoading.value = false
+    console.log(`Total links loaded: ${links.value.length}`) // Add a final log to confirm
   }
 }
-
-const { isLoading } = useInfiniteScroll(
-  document,
-  getLinks,
-  {
-    distance: 150,
-    interval: 1000,
-    canLoadMore: () => {
-      return !listError && !listComplete
-    },
-  },
-)
 
 function updateLinkList(link, type) {
   if (type === 'edit') {
     const index = links.value.findIndex(l => l.id === link.id)
-    links.value[index] = link
-
-    // Also update in allLinks cache
-    const allIndex = allLinks.value.findIndex(l => l.id === link.id)
-    if (allIndex > -1) {
-      allLinks.value[allIndex] = link
+    if (index > -1) {
+      links.value[index] = link
     }
   }
   else if (type === 'delete') {
     const index = links.value.findIndex(l => l.id === link.id)
-    links.value.splice(index, 1)
-
-    // Also remove from allLinks cache
-    const allIndex = allLinks.value.findIndex(l => l.id === link.id)
-    if (allIndex > -1) {
-      allLinks.value.splice(allIndex, 1)
+    if (index > -1) {
+      links.value.splice(index, 1)
     }
   }
-  else {
+  else { // 'create'
     links.value.unshift(link)
     sortBy.value = 'newest'
-
-    // Also add to allLinks cache
-    allLinks.value.unshift(link)
   }
 }
 
-// Start background loading when component mounts
+// Start loading all links when component mounts
 onMounted(() => {
-  getAllLinksInBackground()
+  loadAllLinks()
 })
 </script>
 
@@ -223,8 +178,8 @@ onMounted(() => {
       <LazyDashboardLinksSearch />
     </div>
     <DashboardLinksDomainFilter
-      :links="allLinks.length > links.length ? allLinks : links"
-      :is-loading-all="isLoadingAllLinks"
+      :links="links"
+      :is-loading-all="isLoading"
       @update:selected-domains="selectedDomains = $event"
     />
     <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -243,11 +198,11 @@ onMounted(() => {
     </div>
 
     <div
-      v-if="listError"
-      class="flex items-center justify-center text-sm"
+      v-if="loadError"
+      class="flex items-center justify-center text-sm text-red-500"
     >
       {{ $t('links.load_failed') }}
-      <Button variant="link" @click="getLinks">
+      <Button variant="link" @click="loadAllLinks">
         {{ $t('common.try_again') }}
       </Button>
     </div>
