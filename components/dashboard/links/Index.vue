@@ -7,6 +7,9 @@ const loadError = ref(false)
 
 const sortBy = ref('newest')
 const selectedDomains = ref([])
+const currentView = ref('card') // 'card' or 'table'
+
+const searchTerm = ref('') // New ref for the search term
 
 // Extract the main domain from URL for smart sorting
 function extractMainDomain(url) {
@@ -52,6 +55,26 @@ function extractMainDomain(url) {
 // Filter and sort links
 const displayedLinks = computed(() => {
   let filtered = [...links.value]
+
+  // Apply search filter
+  if (searchTerm.value) {
+    const lowerCaseSearchTerm = searchTerm.value.toLowerCase()
+    filtered = filtered.filter((link) => {
+      const slugMatch = link.slug.toLowerCase().startsWith(lowerCaseSearchTerm)
+      const urlMatch = link.url.toLowerCase().includes(lowerCaseSearchTerm) // Simple includes for URL for now
+
+      // Advanced matching for slug after a dash
+      const slugAfterDash = link.slug.split('-').pop() || ''
+      const slugAfterDashMatch = slugAfterDash.toLowerCase().startsWith(lowerCaseSearchTerm)
+
+      // Advanced matching for domain after a dash
+      const urlHost = extractMainDomain(link.url)
+      const urlHostAfterDash = urlHost.split('-').pop() || ''
+      const urlHostAfterDashMatch = urlHostAfterDash.toLowerCase().startsWith(lowerCaseSearchTerm)
+
+      return slugMatch || urlMatch || slugAfterDashMatch || urlHostAfterDashMatch
+    })
+  }
 
   // Apply domain filters
   if (selectedDomains.value.length > 0) {
@@ -160,6 +183,10 @@ function updateLinkList(link, type) {
   }
 }
 
+function setView(view) {
+  currentView.value = view
+}
+
 // Start loading all links when component mounts
 onMounted(() => {
   loadAllLinks()
@@ -169,20 +196,29 @@ onMounted(() => {
 <template>
   <main class="space-y-6">
     <div class="flex flex-col gap-6 sm:gap-2 sm:flex-row sm:justify-between">
-      <DashboardNav class="flex-1">
+      <DashboardNav
+        class="flex-1"
+        :current-view="currentView"
+        @update:view="setView"
+      >
         <div class="flex items-center gap-2">
           <DashboardLinksEditor @update:link="updateLinkList" />
           <DashboardLinksSort v-model:sort-by="sortBy" />
         </div>
       </DashboardNav>
-      <LazyDashboardLinksSearch />
+      <!-- Comment out the existing LazyDashboardLinksSearch component -->
+      <!-- <LazyDashboardLinksSearch /> -->
+      <DashboardLinksSearchQuick v-model:search-term="searchTerm" />
     </div>
     <DashboardLinksDomainFilter
       :links="links"
       :is-loading-all="isLoading"
       @update:selected-domains="selectedDomains = $event"
     />
-    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <section
+      v-if="currentView === 'card'"
+      class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+    >
       <DashboardLinksLink
         v-for="link in displayedLinks"
         :key="link.id"
@@ -190,6 +226,13 @@ onMounted(() => {
         @update:link="updateLinkList"
       />
     </section>
+
+    <DashboardLinksTable
+      v-else-if="currentView === 'table'"
+      :links="displayedLinks"
+      @update:link="updateLinkList"
+    />
+
     <div
       v-if="isLoading"
       class="flex items-center justify-center"
