@@ -14,7 +14,7 @@ function handleViewChange(view) {
 
 <template>
   <section class="flex justify-between">
-    <Tabs
+    <!-- <Tabs
       v-if="route.path !== '/dashboard/link'"
       :default-value="route.path"
       @update:model-value="navigateTo"
@@ -29,7 +29,7 @@ function handleViewChange(view) {
           {{ $t('nav.analysis') }}
         </TabsTrigger>
       </TabsList>
-    </Tabs>
+    </Tabs> -->
     <Tabs
       v-if="route.path === '/dashboard/links'"
       :default-value="currentView"
