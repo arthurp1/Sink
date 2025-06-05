@@ -85,7 +85,7 @@ const linkIcon = computed(() => {
   return `https://unavatar.io/${host}?fallback=${encodeURIComponent(googleFaviconUrl)}`
 })
 
-const copyLinkText = computed(() => shortLink.value)
+const copyLinkText = computed(() => shortLink.value.replace(/^(https?:\/\/)/, ''))
 
 const { copy, copied } = useClipboard({ source: copyLinkText.value, copiedDuring: 400 })
 
