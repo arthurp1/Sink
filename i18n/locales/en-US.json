@@ -11,7 +11,12 @@
     "edit": "Edit",
     "delete": "Delete",
     "delete_success": "Delete successful!",
-    "search": "Search"
+    "search": "Search",
+    "slug": "Slug",
+    "original_url": "Original URL",
+    "clicks": "Clicks",
+    "created_at": "Created At",
+    "actions": "Actions"
   },
   "theme": {
     "toggle": "Toggle theme",
@@ -172,6 +177,8 @@
       "url_za": "Domain Z-A",
       "slug_az": "Slug A-Z",
       "slug_za": "Slug Z-A",
+      "clicks_asc": "Clicks Ascending",
+      "clicks_desc": "Clicks Descending",
       "tip": "Experience: Only for loaded links"
     }
   }
