@@ -65,7 +65,7 @@ const domainTags = computed(() => {
     const domain = extractMainDomain(link.url)
     domainCounts[domain] = (domainCounts[domain] || 0) + 1
   })
-  console.log('DomainFilter: domainCounts', domainCounts)
+  console.log('[DomainFilter] domainCounts:', domainCounts)
 
   // Separate domains with 3+ links and others
   const majorDomains = []
@@ -81,9 +81,9 @@ const domainTags = computed(() => {
       othersCount += count
     }
   })
-  console.log('DomainFilter: majorDomains', majorDomains)
-  console.log('DomainFilter: minorDomains', minorDomains)
-  console.log('DomainFilter: othersCount', othersCount)
+  console.log('[DomainFilter] majorDomains:', majorDomains)
+  console.log('[DomainFilter] minorDomains:', minorDomains)
+  console.log('[DomainFilter] othersCount:', othersCount)
 
   // Sort major domains by count (descending)
   majorDomains.sort((a, b) => b.count - a.count)
@@ -98,7 +98,7 @@ const domainTags = computed(() => {
       minorDomains: minorDomains.map(d => d.domain),
     })
   }
-  console.log('DomainFilter: final tags', tags)
+  console.log('[DomainFilter] final tags:', tags)
 
   return tags
 })

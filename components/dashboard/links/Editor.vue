@@ -180,6 +180,7 @@ const { previewMode } = useRuntimeConfig().public
           </div>
         </template>
         <DialogFooter>
+          <slot name="delete-button" :link="link" />
           <DialogClose as-child>
             <Button
               type="button"

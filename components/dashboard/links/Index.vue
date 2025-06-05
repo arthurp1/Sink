@@ -168,7 +168,7 @@ async function loadAllLinks() {
   }
   finally {
     isLoading.value = false
-    console.log(`Total links loaded: ${links.value.length}`) // Add a final log to confirm
+    console.log(`[Index.vue] Total links loaded: ${links.value.length}`) // Add a final log to confirm
   }
 }
 

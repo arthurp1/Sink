@@ -1,9 +1,12 @@
 <script setup>
+import { Button } from '@/components/ui/button'
 import { useClipboard } from '@vueuse/core'
-import { Clipboard as ClipboardIcon, Copy, CopyCheck, Eraser, Hourglass, QrCode, SquareChevronDown, SquarePen } from 'lucide-vue-next'
+import { Clipboard as ClipboardIcon, Copy, CopyCheck, Eraser, Hourglass, QrCode, SquarePen } from 'lucide-vue-next'
 import { parseURL } from 'ufo'
 import { computed } from 'vue'
 import { toast } from 'vue-sonner'
+import { DashboardLinksDelete } from './DashboardLinksDelete.vue'
+import { DashboardLinksEditor } from './DashboardLinksEditor.vue'
 import QRCode from './QRCode.vue'
 
 const props = defineProps({
@@ -179,47 +182,29 @@ function navigateToOriginalUrl() {
           </PopoverContent>
         </Popover>
 
-        <Popover v-model:open="editPopoverOpen" @click.stop>
-          <PopoverTrigger as-child @click.stop>
-            <SquareChevronDown
-              class="w-5 h-5 cursor-pointer"
-            />
-          </PopoverTrigger>
-          <PopoverContent
-            class="w-auto p-0"
-            :hide-when-detached="false"
-            @click.stop
-          >
-            <DashboardLinksEditor
-              :link="link"
-              @update:link="updateLink"
-            >
-              <div
-                class="cursor-pointer flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
-              >
-                <SquarePen
-                  class="w-5 h-5 mr-2"
-                />
-                {{ $t('common.edit') }}
-              </div>
-            </DashboardLinksEditor>
-
-            <Separator />
-
+        <DashboardLinksEditor
+          :link="link"
+          @update:link="updateLink"
+        >
+          <SquarePen
+            class="w-5 h-5 cursor-pointer ml-2"
+          />
+          <template #delete-button="{ link: editorLink }">
             <DashboardLinksDelete
-              :link="link"
+              :link="editorLink"
               @update:link="updateLink"
             >
-              <div
-                class="cursor-pointer flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+              <Button
+                type="button"
+                variant="destructive"
+                class="w-full justify-start"
               >
-                <Eraser
-                  class="w-5 h-5 mr-2"
-                /> {{ $t('common.delete') }}
-              </div>
+                <Eraser class="w-5 h-5 mr-2" />
+                {{ $t('common.delete') }}
+              </Button>
             </DashboardLinksDelete>
-          </PopoverContent>
-        </Popover>
+          </template>
+        </DashboardLinksEditor>
       </div>
       <div class="flex items-center text-sm mt-auto opacity-60 h-5">
         <TooltipProvider @click.stop>
