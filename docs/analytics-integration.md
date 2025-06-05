@@ -107,9 +107,9 @@ import { trackEvent } from '~/utils/analytics'
 
 function handleAction() {
   // Do something
-  trackEvent('custom_action', { 
+  trackEvent('custom_action', {
     category: 'engagement',
-    label: 'feature_used'
+    label: 'feature_used',
   })
 }
 </script>
@@ -165,4 +165,4 @@ For debugging purposes, you can:
 - Add `?debug_analytics=true` to any URL to enable verbose console logging
 - Use the verification endpoint to test your configuration: `/api/analytics/verify`
 - Check server logs for Measurement Protocol errors
-- Inspect the runtime configuration in your browser console: `console.log(useRuntimeConfig().public.gaMeasurementId)` 
+- Inspect the runtime configuration in your browser console: `console.log(useRuntimeConfig().public.gaMeasurementId)`

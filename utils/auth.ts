@@ -3,60 +3,61 @@
  */
 
 // Local storage key for the site token
-const SITE_TOKEN_KEY = 'sink_site_token';
+const SITE_TOKEN_KEY = 'sink_site_token'
 
 /**
  * Store the site token in local storage
  * @param token Site token to store
  */
-export const storeSiteToken = (token: string): void => {
+export function storeSiteToken(token: string): void {
   if (typeof window !== 'undefined' && token) {
-    localStorage.setItem(SITE_TOKEN_KEY, token);
+    localStorage.setItem(SITE_TOKEN_KEY, token)
   }
-};
+}
 
 /**
  * Get the site token from local storage
  * @returns The stored site token or null if not found
  */
-export const getSiteToken = (): string | null => {
+export function getSiteToken(): string | null {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem(SITE_TOKEN_KEY);
+    return localStorage.getItem(SITE_TOKEN_KEY)
   }
-  return null;
-};
+  return null
+}
 
 /**
  * Remove the site token from local storage
  */
-export const clearSiteToken = (): void => {
+export function clearSiteToken(): void {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem(SITE_TOKEN_KEY);
+    localStorage.removeItem(SITE_TOKEN_KEY)
   }
-};
+}
 
 /**
  * Check if a site token exists in local storage
  * @returns Whether a site token exists
  */
-export const hasSiteToken = (): boolean => {
-  return !!getSiteToken();
-};
+export function hasSiteToken(): boolean {
+  return !!getSiteToken()
+}
 
 /**
  * Validate the stored token against the expected value
  * @param expectedToken The expected token value (optional)
  * @returns True if the stored token matches the expected token
  */
-export const isValidToken = (expectedToken?: string): boolean => {
-  const token = getSiteToken();
-  if (!token) return false;
+export function isValidToken(expectedToken?: string): boolean {
+  const token = getSiteToken()
+  if (!token)
+    return false
 
   // If an expected token is provided, validate against it
   if (expectedToken) {
-    return token === expectedToken;
+    return token === expectedToken
   }
 
   // Otherwise just check that the token exists and has a minimum length
-  return token.length >= 8;
-};
+  return token.length >= 8
+}

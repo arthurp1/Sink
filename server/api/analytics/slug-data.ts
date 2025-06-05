@@ -27,22 +27,22 @@ export default defineEventHandler(async (event) => {
   const GA_API_SECRET = config.gaApiSecret
 
   // Check for missing configuration
-  const configErrors = [];
+  const configErrors = []
 
   if (!GA_MEASUREMENT_ID) {
-    configErrors.push('Missing GA_MEASUREMENT_ID environment variable');
+    configErrors.push('Missing GA_MEASUREMENT_ID environment variable')
   }
 
   if (!GA_API_SECRET) {
-    configErrors.push('Missing GA_API_SECRET environment variable');
+    configErrors.push('Missing GA_API_SECRET environment variable')
   }
 
   if (configErrors.length > 0) {
     return {
       error: 'Google Analytics configuration is incomplete',
       details: configErrors,
-      help: 'Please add the missing environment variables to your .env file'
-    };
+      help: 'Please add the missing environment variables to your .env file',
+    }
   }
 
   // Get the slug from the query
@@ -81,7 +81,8 @@ export default defineEventHandler(async (event) => {
       // 2. Authenticate with OAuth2 or a service account
       // 3. Make requests to https://analyticsdata.googleapis.com/v1beta/...
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching GA data:', error)
 
     throw createError({

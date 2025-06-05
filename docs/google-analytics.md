@@ -59,7 +59,7 @@ To view link analytics in Google Analytics:
 Google Analytics is automatically integrated when you provide a valid GTM ID. The plugin will:
 
 - Only track in production mode, not during development
-- Automatically track page views 
+- Automatically track page views
 - Provide utility functions for custom tracking
 
 ### Custom Event Tracking
@@ -70,9 +70,9 @@ You can use the utility functions from `utils/analytics.ts` to track custom even
 import { trackEvent } from '~/utils/analytics'
 
 // Track a custom event
-trackEvent('button_click', { 
+trackEvent('button_click', {
   button_id: 'create-link',
-  button_text: 'Create Link' 
+  button_text: 'Create Link',
 })
 ```
 
@@ -93,4 +93,4 @@ When implementing Google Analytics, ensure you comply with privacy regulations l
 
 1. Update your privacy policy to disclose Google Analytics usage
 2. Consider implementing a cookie consent banner
-3. Configure Google Analytics for data anonymization where appropriate 
+3. Configure Google Analytics for data anonymization where appropriate

@@ -1,4 +1,3 @@
-import type { H3Event } from 'h3'
 import { z } from 'zod'
 
 // Base schema for query validation
@@ -6,12 +5,12 @@ const QuerySchema = z.object({
   startAt: z.string().or(z.number()).optional(),
   endAt: z.string().or(z.number()).optional(),
   limit: z.number().default(100),
-});
+})
 
 // Schema specific to metrics endpoint
 const MetricsQuerySchema = QuerySchema.extend({
   type: z.string(),
-});
+})
 
 // Mock data for different metric types
 function generateMockMetricsData(type: string): any[] {
@@ -24,7 +23,7 @@ function generateMockMetricsData(type: string): any[] {
         { name: 'Android', count: Math.floor(Math.random() * 120) + 40 },
         { name: 'Linux', count: Math.floor(Math.random() * 50) + 20 },
         { name: 'Other', count: Math.floor(Math.random() * 30) + 10 },
-      ];
+      ]
 
     case 'device':
       return [
@@ -32,7 +31,7 @@ function generateMockMetricsData(type: string): any[] {
         { name: 'Mobile', count: Math.floor(Math.random() * 250) + 150 },
         { name: 'Tablet', count: Math.floor(Math.random() * 100) + 50 },
         { name: 'Other', count: Math.floor(Math.random() * 30) + 10 },
-      ];
+      ]
 
     case 'referer':
       return [
@@ -42,7 +41,7 @@ function generateMockMetricsData(type: string): any[] {
         { name: 'Facebook', count: Math.floor(Math.random() * 80) + 40 },
         { name: 'LinkedIn', count: Math.floor(Math.random() * 60) + 30 },
         { name: 'GitHub', count: Math.floor(Math.random() * 40) + 20 },
-      ];
+      ]
 
     case 'language':
       return [
@@ -52,7 +51,7 @@ function generateMockMetricsData(type: string): any[] {
         { name: 'de-DE', count: Math.floor(Math.random() * 70) + 30 },
         { name: 'es-ES', count: Math.floor(Math.random() * 60) + 20 },
         { name: 'zh-CN', count: Math.floor(Math.random() * 50) + 10 },
-      ];
+      ]
 
     case 'country':
       return [
@@ -64,7 +63,7 @@ function generateMockMetricsData(type: string): any[] {
         { name: 'Australia', count: Math.floor(Math.random() * 60) + 30 },
         { name: 'Netherlands', count: Math.floor(Math.random() * 50) + 25 },
         { name: 'China', count: Math.floor(Math.random() * 40) + 20 },
-      ];
+      ]
 
     default:
       return [
@@ -72,7 +71,7 @@ function generateMockMetricsData(type: string): any[] {
         { name: 'Category 2', count: Math.floor(Math.random() * 150) + 75 },
         { name: 'Category 3', count: Math.floor(Math.random() * 100) + 50 },
         { name: 'Other', count: Math.floor(Math.random() * 50) + 25 },
-      ];
+      ]
   }
 }
 
@@ -90,16 +89,17 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Parse and validate the query parameters
-    const query = getQuery(event);
-    const validated = MetricsQuerySchema.parse(query);
+    const query = getQuery(event)
+    const validated = MetricsQuerySchema.parse(query)
 
     // Generate and return mock data
-    return generateMockMetricsData(validated.type);
-  } catch (error) {
-    console.error('Error in metrics endpoint:', error);
+    return generateMockMetricsData(validated.type)
+  }
+  catch (error) {
+    console.error('Error in metrics endpoint:', error)
     throw createError({
       statusCode: 400,
       message: 'Invalid query parameters',
-    });
+    })
   }
 })

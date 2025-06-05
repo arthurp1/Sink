@@ -1,4 +1,3 @@
-import type { H3Event } from 'h3'
 import { z } from 'zod'
 
 // Base schema for query validation
@@ -6,7 +5,7 @@ const QuerySchema = z.object({
   startAt: z.string().or(z.number()).optional(),
   endAt: z.string().or(z.number()).optional(),
   limit: z.number().default(100),
-});
+})
 
 // Generate mock counter data
 function generateMockCounterData(): any {
@@ -14,7 +13,7 @@ function generateMockCounterData(): any {
     visits: Math.floor(Math.random() * 1000) + 500,
     visitors: Math.floor(Math.random() * 500) + 250,
     referers: Math.floor(Math.random() * 100) + 30,
-  };
+  }
 }
 
 export default defineEventHandler(async (event) => {
@@ -31,16 +30,17 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Parse and validate the query parameters
-    const query = getQuery(event);
-    const validated = QuerySchema.parse(query);
+    const query = getQuery(event)
+    const _validated = QuerySchema.parse(query)
 
     // Generate and return mock data
-    return generateMockCounterData();
-  } catch (error) {
-    console.error('Error in counters endpoint:', error);
+    return generateMockCounterData()
+  }
+  catch (error) {
+    console.error('Error in counters endpoint:', error)
     throw createError({
       statusCode: 400,
       message: 'Invalid query parameters',
-    });
+    })
   }
 })

@@ -53,7 +53,7 @@ Set `NUXT_DISABLE_BOT_ACCESS_LOG` to `true`.
 
 ## 9. Is there an alternative to Cloudflare Analytics Engine for free plans?
 
-Yes. If you're using Cloudflare's free plan which doesn't include Analytics Engine, you can use Google Analytics as an alternative. 
+Yes. If you're using Cloudflare's free plan which doesn't include Analytics Engine, you can use Google Analytics as an alternative.
 
 Sink includes built-in Google Analytics integration through Google Tag Manager. To enable this:
 

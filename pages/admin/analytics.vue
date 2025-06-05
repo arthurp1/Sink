@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useHead } from '#imports'
+import { ref } from 'vue'
 import { verifyGAConfig } from '~/utils/ga-data'
 
 definePageMeta({
-  middleware: ['auth']
+  middleware: ['auth'],
 })
 
 useHead({
   title: 'Analytics Dashboard',
   meta: [
-    { name: 'description', content: 'View Google Analytics data for your content' }
-  ]
+    { name: 'description', content: 'View Google Analytics data for your content' },
+  ],
 })
 
 const slug = ref('home')
@@ -20,21 +20,23 @@ const configStatus = ref(null)
 const statusLoading = ref(false)
 const statusError = ref(null)
 
-const checkConfigStatus = async () => {
+async function checkConfigStatus() {
   statusLoading.value = true
   statusError.value = null
 
   try {
     configStatus.value = await verifyGAConfig()
-  } catch (err) {
+  }
+  catch (err) {
     statusError.value = 'Failed to verify configuration'
     console.error(err)
-  } finally {
+  }
+  finally {
     statusLoading.value = false
   }
 }
 
-const updateSlug = () => {
+function updateSlug() {
   if (slugInput.value && slugInput.value.trim()) {
     // Remove leading and trailing slashes if present
     let cleanSlug = slugInput.value.trim()
@@ -55,7 +57,9 @@ checkConfigStatus()
 
 <template>
   <div class="container mx-auto py-6 px-4">
-    <h1 class="text-2xl font-bold mb-6">Analytics Dashboard</h1>
+    <h1 class="text-2xl font-bold mb-6">
+      Analytics Dashboard
+    </h1>
 
     <!-- Configuration Status -->
     <div
@@ -77,9 +81,9 @@ checkConfigStatus()
       </p>
 
       <button
-        @click="checkConfigStatus"
         class="mt-2 px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
         :disabled="statusLoading"
+        @click="checkConfigStatus"
       >
         {{ statusLoading ? 'Checking...' : 'Recheck Configuration' }}
       </button>
@@ -94,10 +98,10 @@ checkConfigStatus()
           type="text"
           placeholder="Enter URL slug (e.g., home, blog/post-1)"
           class="flex-grow px-3 py-2 border rounded-l"
-        />
+        >
         <button
-          @click="updateSlug"
           class="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600"
+          @click="updateSlug"
         >
           View
         </button>

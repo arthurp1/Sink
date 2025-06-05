@@ -1,6 +1,6 @@
 import { defu } from 'defu'
 import { toast } from 'vue-sonner'
-import { getSiteToken, clearSiteToken } from '~/utils/auth'
+import { clearSiteToken, getSiteToken } from '~/utils/auth'
 
 /**
  * API utility function for making authenticated requests
@@ -31,7 +31,8 @@ export function useAPI(api: string, options?: object): Promise<unknown> {
     // Show error toast for meaningful errors
     if (error?.data?.statusMessage) {
       toast.error(error?.data?.statusMessage)
-    } else if (error?.data?.message) {
+    }
+    else if (error?.data?.message) {
       toast.error(error?.data?.message)
     }
 

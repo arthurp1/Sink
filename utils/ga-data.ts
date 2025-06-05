@@ -12,7 +12,7 @@
  * @param slug The slug to get data for
  * @returns The event count data
  */
-export const fetchSlugEventCount = async (slug: string) => {
+export async function fetchSlugEventCount(slug: string) {
   try {
     // Make a request to our server-side API that will fetch from GA4
     const response = await fetch(`/api/analytics/slug-data?slug=${encodeURIComponent(slug)}`)
@@ -22,9 +22,10 @@ export const fetchSlugEventCount = async (slug: string) => {
     }
 
     return await response.json()
-  } catch (error) {
+  }
+  catch (error: any) {
     console.error('Error fetching GA data:', error)
-    return { error: error.message }
+    return { error: (error as Error).message }
   }
 }
 
@@ -34,13 +35,14 @@ export const fetchSlugEventCount = async (slug: string) => {
  *
  * @returns Configuration status
  */
-export const verifyGAConfig = async () => {
+export async function verifyGAConfig() {
   try {
     const response = await fetch('/api/analytics/verify')
     return await response.json()
-  } catch (error) {
+  }
+  catch (error: any) {
     console.error('Error verifying GA config:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: (error as Error).message }
   }
 }
 
@@ -51,7 +53,7 @@ export const verifyGAConfig = async () => {
  * @param slug The slug to filter events by
  * @returns GA4 filter object
  */
-export const getGASlugFilter = (slug: string) => {
+export function getGASlugFilter(slug: string) {
   return {
     pagePath: `/${slug}`,
     dimensionFilter: {
@@ -63,5 +65,28 @@ export const getGASlugFilter = (slug: string) => {
         },
       },
     },
+  }
+}
+
+/**
+ * Fetch redirect event counts
+ *
+ * This is a simple wrapper around our server-side API that serves aggregated redirect counts.
+ *
+ * @returns The aggregated redirect counts data
+ */
+export async function fetchRedirectCounts() {
+  try {
+    const response = await fetch('/api/analytics/redirects')
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch redirect counts')
+    }
+
+    return await response.json()
+  }
+  catch (error: any) {
+    console.error('Error fetching redirect counts:', error)
+    return { error: (error as Error).message }
   }
 }

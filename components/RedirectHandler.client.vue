@@ -4,8 +4,8 @@ import { trackRedirect } from '~/utils/analytics'
 const props = defineProps({
   slug: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 })
 
 onMounted(() => {
@@ -17,8 +17,12 @@ onMounted(() => {
 <template>
   <div class="fixed inset-0 flex items-center justify-center bg-background">
     <div class="text-center">
-      <h1 class="text-2xl font-bold mb-2">Redirecting...</h1>
-      <p class="text-muted-foreground">You will be redirected momentarily</p>
+      <h1 class="text-2xl font-bold mb-2">
+        Redirecting...
+      </h1>
+      <p class="text-muted-foreground">
+        You will be redirected momentarily
+      </p>
     </div>
   </div>
 </template>

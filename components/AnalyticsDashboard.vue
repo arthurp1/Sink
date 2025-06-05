@@ -2,7 +2,7 @@
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { onMounted, ref } from 'vue'
-import { fetchSlugEventCount, verifyGAConfig } from '~/utils/ga-data'
+import { fetchRedirectCounts, fetchSlugEventCount, verifyGAConfig } from '~/utils/ga-data'
 
 const props = defineProps({
   slug: {
@@ -17,22 +17,33 @@ const data = ref(null)
 const loading = ref(false)
 const error = ref(null)
 const configStatus = ref(null)
+const redirectCounts = ref(0)
 
 async function fetchData() {
   loading.value = true
   error.value = null
 
   try {
-    const result = await fetchSlugEventCount(props.slug)
+    const [slugData, redirectsData] = await Promise.all([
+      fetchSlugEventCount(props.slug),
+      fetchRedirectCounts(),
+    ])
 
-    if (result.error) {
-      error.value = result.error
+    if (slugData.error) {
+      error.value = slugData.error
     }
     else {
-      data.value = result
+      data.value = slugData
+    }
+
+    if (redirectsData.error) {
+      console.error('Error fetching redirect data:', redirectsData.error)
+    }
+    else {
+      redirectCounts.value = redirectsData.data.reduce((sum: number, item: { eventCount: number }) => sum + item.eventCount, 0)
     }
   }
-  catch (err) {
+  catch (err: any) {
     error.value = 'Failed to fetch analytics data'
     console.error(err)
   }
@@ -158,6 +169,15 @@ onMounted(() => {
           </p>
           <p class="text-2xl font-bold">
             {{ data.events?.download || 0 }}
+          </p>
+        </div>
+
+        <div class="p-3 bg-orange-50 rounded shadow-sm">
+          <p class="text-sm text-gray-600">
+            Redirects
+          </p>
+          <p class="text-2xl font-bold">
+            {{ redirectCounts }}
           </p>
         </div>
       </div>

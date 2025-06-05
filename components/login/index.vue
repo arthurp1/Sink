@@ -50,7 +50,8 @@ async function onSubmit(form) {
     toast.error(t('login.failed'), {
       description: e.message,
     })
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 }

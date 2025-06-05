@@ -50,7 +50,7 @@ export default eventHandler(async (event) => {
           setResponseHeader(event, 'Content-Type', 'text/html')
 
           // Extract metadata for better previews
-          const pageTitle = link.title || `Redirecting to ${new URL(target).hostname}` || `Redirect: ${slug}`
+          const pageTitle = link.title || new URL(target).hostname || `Redirect: ${slug}`
           const pageDescription = link.description || `Redirecting you to ${target}` || `You will be redirected to ${target}`
           const pageImage = link.image || '/icon-192.png' // Default to site icon
           const siteName = 'AIB Shorten URLs'
@@ -153,7 +153,7 @@ export default eventHandler(async (event) => {
 
               // Track the page view event - this is a GA4 best practice for proper page view tracking
               gtag('config', '${gaMeasurementId}', {
-                page_title: '${pageTitle.replace(/'/g, '\\\'')}',
+                page_title: '${pageTitle.replace(/'/g, '\'')}',
                 page_path: '/${slug}',
                 page_location: window.location.href
               });
@@ -161,7 +161,7 @@ export default eventHandler(async (event) => {
               // Track the custom redirect event
               gtag('event', 'redirect', {
                 slug: '${slug}',
-                destination: '${target.replace(/'/g, '\\\'')}',
+                destination: '${target.replace(/'/g, '\'')}',
                 domain: window.location.hostname,
                 referrer: document.referrer || '',
                 timestamp: new Date().toISOString(),
@@ -172,7 +172,7 @@ export default eventHandler(async (event) => {
               // Also track a custom event specifically for redirects
               gtag('event', 'custom_redirect', {
                 slug: '${slug}',
-                destination: '${target.replace(/'/g, '\\\'')}',
+                destination: '${target.replace(/'/g, '\'')}',
                 domain: window.location.hostname,
                 referrer: document.referrer || '',
                 timestamp: new Date().toISOString()

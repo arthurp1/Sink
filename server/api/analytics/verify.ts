@@ -4,14 +4,14 @@ export default defineEventHandler(async (event) => {
   const apiSecret = config.gaApiSecret
 
   // Check for missing configuration
-  const configErrors = [];
+  const configErrors = []
 
   if (!gaMeasurementId) {
-    configErrors.push('Missing GA_MEASUREMENT_ID environment variable');
+    configErrors.push('Missing GA_MEASUREMENT_ID environment variable')
   }
 
   if (!apiSecret) {
-    configErrors.push('Missing GA_API_SECRET environment variable');
+    configErrors.push('Missing GA_API_SECRET environment variable')
   }
 
   if (configErrors.length > 0) {
@@ -19,8 +19,8 @@ export default defineEventHandler(async (event) => {
       success: false,
       message: 'Google Analytics configuration is incomplete',
       errors: configErrors,
-      help: 'Please add the missing environment variables to your .env file or hosting platform'
-    };
+      help: 'Please add the missing environment variables to your .env file or hosting platform',
+    }
   }
 
   try {
@@ -33,31 +33,32 @@ export default defineEventHandler(async (event) => {
         name: 'test_event',
         params: {
           test_param: 'verification_test',
-          timestamp: new Date().toISOString()
-        }
-      }]
+          timestamp: new Date().toISOString(),
+        },
+      }],
     }
 
     const response = await fetch(analyticsEndpoint, {
       method: 'POST',
       body: JSON.stringify(testPayload),
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
 
     // Check response status and body
-    const responseStatus = response.status;
-    let responseBody = {};
+    const responseStatus = response.status
+    let responseBody = {}
 
     try {
       // GA4 typically returns an empty 2xx response on success
       // But we'll try to parse a JSON response if there is one
-      const text = await response.text();
+      const text = await response.text()
       if (text && text.trim() !== '') {
-        responseBody = JSON.parse(text);
+        responseBody = JSON.parse(text)
       }
-    } catch (e) {
+    }
+    catch (_e) {
       // Ignore parsing errors
     }
 
@@ -68,7 +69,7 @@ export default defineEventHandler(async (event) => {
         statusText: response.statusText,
         response: responseBody,
         message: 'Failed to send test event to Google Analytics',
-        details: 'The GA4 endpoint returned an error. Check your Measurement ID and API Secret.'
+        details: 'The GA4 endpoint returned an error. Check your Measurement ID and API Secret.',
       }
     }
 
@@ -79,16 +80,17 @@ export default defineEventHandler(async (event) => {
       config: {
         measurementId: gaMeasurementId,
         apiSecretConfigured: !!apiSecret,
-        domainConfigured: !!config.public.domainName
-      }
+        domainConfigured: !!config.public.domainName,
+      },
     }
-  } catch (error) {
+  }
+  catch (error: any) {
     // Handle network or other errors
     return {
       success: false,
       message: 'Error verifying Google Analytics configuration',
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: (error as Error).message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     }
   }
 })

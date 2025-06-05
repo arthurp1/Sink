@@ -100,7 +100,7 @@ We welcome your contributions and PRs.
 
 5. Save and deploy the project.
 6. Cancel the deployment, then navigate to **Settings** -> **Bindings** -> **Add**:
-   - **KV Namespace**: Bind the variable name `KV` to a [KV namespace](https://developers.cloudflare.com/kv/) (create a new one under **Storage & Databases** -> **KV**). 
+   - **KV Namespace**: Bind the variable name `KV` to a [KV namespace](https://developers.cloudflare.com/kv/) (create a new one under **Storage & Databases** -> **KV**).
    - **Workers AI** (_Optional_): Bind the variable name `AI` to the Workers AI Catalog.
    - **Analytics Engine**:
      - In **Workers & Pages**, go to **Account details** on the right side, find `Analytics Engine`, and click `Set up` to enable the free version.
@@ -179,7 +179,7 @@ A modern URL shortener application with Google Analytics 4 and Cloudflare Analyt
    DOMAIN_NAME=yourdomain.com
    GA_MEASUREMENT_ID=G-XXXXXXXXXX
    GA_API_SECRET=your_api_secret_here
-   
+
    # Optional variables
    GOOGLE_TAG_MANAGER_ID=GTM-XXXXXXX
    ```

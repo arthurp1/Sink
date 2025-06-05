@@ -5,7 +5,7 @@ import withNuxt from './.nuxt/eslint.config.mjs'
 export default withNuxt(
   antfu(),
   {
-    ignores: ['components/ui', '.data', 'public/world.json'],
+    ignores: ['components/ui', '.data', 'public/world.json', 'docs/analytics-integration.md'],
   },
   {
     rules: {
