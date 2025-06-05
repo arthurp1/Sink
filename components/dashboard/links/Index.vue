@@ -2,7 +2,7 @@
 import { useLocalStorage } from '@vueuse/core'
 import { Loader } from 'lucide-vue-next'
 
-const links = ref([])
+const links = useLocalStorage('cached-links', [])
 const isLoading = ref(false)
 const loadError = ref(false)
 
@@ -123,9 +123,10 @@ const displayedLinks = computed(() => {
 })
 
 async function loadAllLinks() {
-  isLoading.value = true
+  if (links.value.length === 0) {
+    isLoading.value = true
+  }
   loadError.value = false // Reset error state
-  links.value = [] // Clear existing links before fetching all
 
   try {
     let currentCursor = '' // Start with an empty cursor for the first request
@@ -147,7 +148,13 @@ async function loadAllLinks() {
       console.log(`[Response ${requestCount}] Fetched ${fetchedLinksCount} links. Received cursor: '${data.cursor}', List Complete: ${data.list_complete}`)
 
       if (data.links && Array.isArray(data.links) && data.links.length > 0) {
-        links.value.push(...data.links.filter(Boolean))
+        // Replace the links array with new data if it's the first batch, otherwise append
+        if (currentCursor === '') {
+          links.value = data.links.filter(Boolean)
+        }
+        else {
+          links.value.push(...data.links.filter(Boolean))
+        }
       }
 
       currentCursor = data.cursor // Update cursor for the next iteration
@@ -182,6 +189,8 @@ function updateLinkList(link, type) {
     links.value.unshift(link)
     sortBy.value = 'newest'
   }
+  // Trigger a full data refresh after any CRUD operation
+  loadAllLinks()
 }
 
 function setView(view) {
