@@ -1,6 +1,6 @@
 <script setup>
 import { useClipboard } from '@vueuse/core'
-import { Clipboard as ClipboardIcon, Copy, CopyCheck, Eraser, QrCode, SquarePen } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp, Clipboard as ClipboardIcon, Copy, CopyCheck, Eraser, QrCode, SquarePen } from 'lucide-vue-next'
 import { parseURL } from 'ufo'
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
@@ -11,9 +11,13 @@ const _props = defineProps({
     type: Array,
     required: true,
   },
+  sortBy: {
+    type: String,
+    required: true,
+  },
 })
 
-const emit = defineEmits(['update:link'])
+const emit = defineEmits(['update:link', 'update:sortBy'])
 
 const { t } = useI18n()
 const { origin } = location
@@ -90,6 +94,27 @@ function updateLink(link, type) {
   emit('update:link', link, type)
   editPopoverOpen.value = false
 }
+
+function handleSort(column) {
+  let newSortBy = ''
+  switch (column) {
+    case 'slug':
+      newSortBy = _props.sortBy === 'slug_az' ? 'slug_za' : 'slug_az'
+      break
+    case 'original_url':
+      newSortBy = _props.sortBy === 'url_az' ? 'url_za' : 'url_az'
+      break
+    case 'clicks':
+      newSortBy = _props.sortBy === 'clicks_asc' ? 'clicks_desc' : 'clicks_asc'
+      break
+    case 'createdAt':
+      newSortBy = _props.sortBy === 'newest' ? 'oldest' : 'newest'
+      break
+    default:
+      newSortBy = 'newest'
+  }
+  emit('update:sortBy', newSortBy)
+}
 </script>
 
 <template>
@@ -97,12 +122,42 @@ function updateLink(link, type) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead class="w-[100px]">
-            {{ $t('common.slug') }}
+          <TableHead class="w-[90px] cursor-pointer" @click="handleSort('slug')">
+            <div class="flex items-center">
+              {{ $t('common.slug') }}
+              <template v-if="sortBy.startsWith('slug_')">
+                <ArrowUp v-if="sortBy === 'slug_az'" class="ml-1 w-4 h-4" />
+                <ArrowDown v-else class="ml-1 w-4 h-4" />
+              </template>
+            </div>
           </TableHead>
-          <TableHead>{{ $t('common.original_url') }}</TableHead>
-          <TableHead>{{ $t('common.clicks') }}</TableHead>
-          <TableHead>{{ $t('common.created_at') }}</TableHead>
+          <TableHead class="max-w-[250px] overflow-hidden cursor-pointer" @click="handleSort('original_url')">
+            <div class="flex items-center">
+              {{ $t('common.original_url') }}
+              <template v-if="sortBy.startsWith('url_')">
+                <ArrowUp v-if="sortBy === 'url_az'" class="ml-1 w-4 h-4" />
+                <ArrowDown v-else class="ml-1 w-4 h-4" />
+              </template>
+            </div>
+          </TableHead>
+          <TableHead class="cursor-pointer" @click="handleSort('clicks')">
+            <div class="flex items-center">
+              {{ $t('common.clicks') }}
+              <template v-if="sortBy.startsWith('clicks_')">
+                <ArrowUp v-if="sortBy === 'clicks_asc'" class="ml-1 w-4 h-4" />
+                <ArrowDown v-else class="ml-1 w-4 h-4" />
+              </template>
+            </div>
+          </TableHead>
+          <TableHead class="cursor-pointer" @click="handleSort('createdAt')">
+            <div class="flex items-center">
+              {{ $t('common.created_at') }}
+              <template v-if="sortBy.startsWith('newest') || sortBy.startsWith('oldest')">
+                <ArrowUp v-if="sortBy === 'oldest'" class="ml-1 w-4 h-4" />
+                <ArrowDown v-else class="ml-1 w-4 h-4" />
+              </template>
+            </div>
+          </TableHead>
           <TableHead class="w-[100px]">
             {{ $t('common.actions') }}
           </TableHead>
@@ -119,33 +174,35 @@ function updateLink(link, type) {
               <Copy v-else class="w-4 h-4 ml-1 shrink-0" />
             </div>
           </TableCell>
-          <TableCell>
-            <TooltipProvider @click.stop>
-              <Tooltip @click.stop>
-                <TooltipTrigger as-child @click.stop>
-                  <span
-                    class="truncate text-muted-foreground cursor-pointer hover:underline flex-1 min-w-0"
-                    @click.stop="navigateToOriginalUrl(link.url)"
-                  >
-                    {{ displayedOriginalUrl(link.url) }}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent @click.stop>
-                  <p class="max-w-[90svw] break-all">
-                    {{ displayedOriginalUrl(link.url) }}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <Copy
-              v-if="!copiedOriginal"
-              class="w-4 h-4 shrink-0 text-muted-foreground cursor-pointer ml-1"
-              @click.stop="copyOriginalLink(link.url)"
-            />
-            <CopyCheck
-              v-else
-              class="w-4 h-4 shrink-0 text-muted-foreground ml-1"
-            />
+          <TableCell class="max-w-[250px] overflow-hidden">
+            <div class="flex items-center">
+              <TooltipProvider @click.stop>
+                <Tooltip @click.stop>
+                  <TooltipTrigger as-child @click.stop>
+                    <span
+                      class="truncate text-muted-foreground cursor-pointer hover:underline flex-1 min-w-0"
+                      @click.stop="navigateToOriginalUrl(link.url)"
+                    >
+                      {{ displayedOriginalUrl(link.url) }}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent @click.stop>
+                    <p class="max-w-[90svw] break-all">
+                      {{ displayedOriginalUrl(link.url) }}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Copy
+                v-if="!copiedOriginal"
+                class="w-4 h-4 shrink-0 text-muted-foreground cursor-pointer ml-1"
+                @click.stop="copyOriginalLink(link.url)"
+              />
+              <CopyCheck
+                v-else
+                class="w-4 h-4 shrink-0 text-muted-foreground ml-1"
+              />
+            </div>
           </TableCell>
           <TableCell>
             <TooltipProvider>

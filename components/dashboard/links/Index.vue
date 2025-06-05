@@ -1,13 +1,14 @@
 <script setup>
+import { useLocalStorage } from '@vueuse/core'
 import { Loader } from 'lucide-vue-next'
 
 const links = ref([])
 const isLoading = ref(false)
 const loadError = ref(false)
 
-const sortBy = ref('newest')
+const sortBy = useLocalStorage('links-sort-by', 'newest')
 const selectedDomains = ref([])
-const currentView = ref('card') // 'card' or 'table'
+const currentView = useLocalStorage('links-view', 'card') // 'card' or 'table'
 
 const searchTerm = ref('') // New ref for the search term
 
@@ -191,6 +192,16 @@ function setView(view) {
 onMounted(() => {
   loadAllLinks()
 })
+
+watch(currentView, (newValue) => {
+  if (newValue === 'table') {
+    // When switching to table view, default sorting to slug_az if it's currently 'newest' or 'oldest'
+    // This ensures a sensible default for the table's clickable headers
+    if (sortBy.value === 'newest' || sortBy.value === 'oldest') {
+      sortBy.value = 'slug_az'
+    }
+  }
+})
 </script>
 
 <template>
@@ -230,6 +241,8 @@ onMounted(() => {
     <DashboardLinksTable
       v-else-if="currentView === 'table'"
       :links="displayedLinks"
+      :sort-by="sortBy"
+      @update:sort-by="sortBy = $event"
       @update:link="updateLinkList"
     />
 
