@@ -6,7 +6,7 @@ import { parseURL } from 'ufo'
 import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 import { DashboardLinksDelete } from './Delete.vue'
-import { DashboardLinksEditor } from './Editor.vue'
+import DashboardLinksEditor from './Editor.vue'
 import QRCode from './QRCode.vue'
 
 const props = defineProps({
